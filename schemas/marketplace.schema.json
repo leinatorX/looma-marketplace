@@ -27,6 +27,7 @@
         "category",
         "homepage",
         "manifest",
+        "files",
         "source",
         "policy"
       ],
@@ -48,6 +49,16 @@
         "manifest": {
           "type": "string",
           "pattern": "^plugins/[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?/\\.looma-plugin/plugin\\.json$"
+        },
+        "files": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+          }
         },
         "source": {
           "type": "object",
@@ -76,4 +87,3 @@
     }
   }
 }
-

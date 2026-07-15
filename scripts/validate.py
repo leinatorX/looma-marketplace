@@ -7,7 +7,7 @@ import argparse
 import json
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 
@@ -185,6 +185,26 @@ def validate_marketplace(path: Path) -> None:
         if manifest["version"] != entry["version"]:
             raise ValidationError(f"市场与插件清单 version 不一致：{plugin_id}")
 
+        files = entry.get("files")
+        if not isinstance(files, list) or not files or not all(isinstance(item, str) for item in files):
+            raise ValidationError(f"市场 files 必须是非空字符串数组：{plugin_id}")
+        if len(files) != len(set(files)):
+            raise ValidationError(f"市场 files 不能包含重复路径：{plugin_id}")
+        for item in files:
+            path = PurePosixPath(item)
+            if path.is_absolute() or ".." in path.parts or "\\" in item:
+                raise ValidationError(f"市场 files 包含不安全路径：{plugin_id} -> {item}")
+        plugin_root = ROOT / "plugins" / plugin_id
+        actual_files = sorted(
+            path.relative_to(plugin_root).as_posix()
+            for path in plugin_root.rglob("*")
+            if path.is_file()
+        )
+        if sorted(files) != actual_files:
+            raise ValidationError(
+                f"市场 files 与插件目录不一致：{plugin_id}，声明={sorted(files)}，实际={actual_files}"
+            )
+
         source = entry.get("source")
         if not isinstance(source, dict) or source.get("type") != "github":
             raise ValidationError(f"source.type 当前必须为 github：{plugin_id}")
@@ -232,4 +252,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
