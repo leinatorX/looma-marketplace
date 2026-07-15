@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../schemas/plugin.schema.json",
+  "schemaVersion": 1,
+  "name": "example-plugin",
+  "version": "1.0.0",
+  "description": "演示 Looma 插件的最小可用目录与清单结构。",
+  "author": {
+    "name": "Looma Community",
+    "url": "https://github.com/leinatorX"
+  },
+  "homepage": "https://github.com/leinatorX/looma-marketplace",
+  "repository": "https://github.com/leinatorX/looma-marketplace",
+  "license": "MIT",
+  "keywords": ["example"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Example Plugin",
+    "shortDescription": "用于创建 Looma 插件的最小模板。",
+    "category": "开发",
+    "brandColor": "#3B82F6"
+  }
+}
+

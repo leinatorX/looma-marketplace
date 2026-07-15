@@ -1,0 +1,7 @@
+{
+  "$schema": "./schemas/marketplace.schema.json",
+  "version": 1,
+  "updatedAt": "2026-07-15",
+  "plugins": []
+}
+

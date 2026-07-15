@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/leinatorX/looma-marketplace/main/schemas/marketplace.schema.json",
+  "title": "Looma Plugin Marketplace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "updatedAt", "plugins"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "updatedAt": { "type": "string", "format": "date" },
+    "plugins": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pluginEntry" }
+    }
+  },
+  "$defs": {
+    "pluginEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "description",
+        "version",
+        "author",
+        "category",
+        "homepage",
+        "manifest",
+        "source",
+        "policy"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+          "maxLength": 64
+        },
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "description": { "type": "string", "minLength": 10, "maxLength": 500 },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+        },
+        "author": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "category": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "homepage": { "type": "string", "format": "uri" },
+        "manifest": {
+          "type": "string",
+          "pattern": "^plugins/[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?/\\.looma-plugin/plugin\\.json$"
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "repository", "ref", "path"],
+          "properties": {
+            "type": { "const": "github" },
+            "repository": { "type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$" },
+            "ref": { "type": "string", "minLength": 1, "maxLength": 100 },
+            "path": {
+              "type": "string",
+              "pattern": "^plugins/[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+            }
+          }
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["installation", "authentication"],
+          "properties": {
+            "installation": { "enum": ["AVAILABLE", "BLOCKED"] },
+            "authentication": { "enum": ["NONE", "ON_USE", "REQUIRED"] }
+          }
+        }
+      }
+    }
+  }
+}
+

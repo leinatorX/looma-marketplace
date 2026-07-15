@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/leinatorX/looma-marketplace/main/schemas/plugin.schema.json",
+  "title": "Looma Plugin Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "name",
+    "version",
+    "description",
+    "author",
+    "repository",
+    "license",
+    "skills",
+    "interface"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      "maxLength": 64
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "description": { "type": "string", "minLength": 10, "maxLength": 500 },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "url": { "type": "string", "format": "uri" }
+      }
+    },
+    "homepage": { "type": "string", "format": "uri" },
+    "repository": { "type": "string", "format": "uri" },
+    "license": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "keywords": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 32 }
+    },
+    "skills": { "const": "./skills/" },
+    "interface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["displayName", "shortDescription", "category", "brandColor"],
+      "properties": {
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "shortDescription": { "type": "string", "minLength": 10, "maxLength": 160 },
+        "category": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "brandColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+      }
+    }
+  }
+}
+
