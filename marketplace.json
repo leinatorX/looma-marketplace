@@ -2,6 +2,26 @@
   "$schema": "./schemas/marketplace.schema.json",
   "version": 1,
   "updatedAt": "2026-07-15",
-  "plugins": []
+  "plugins": [
+    {
+      "id": "looma-test-plugin",
+      "name": "Looma 测试插件",
+      "description": "用于验证 Looma 插件市场发现、启停和 Skill 触发链路的无副作用测试插件。",
+      "version": "1.0.0",
+      "author": "leinatorX",
+      "category": "开发",
+      "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/looma-test-plugin",
+      "manifest": "plugins/looma-test-plugin/.looma-plugin/plugin.json",
+      "source": {
+        "type": "github",
+        "repository": "leinatorX/looma-marketplace",
+        "ref": "main",
+        "path": "plugins/looma-test-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "NONE"
+      }
+    }
+  ]
 }
-

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Looma 插件验证"
+  short_description: "用于验证 Looma 市场插件是否成功加载并能够被准确触发"
+  default_prompt: "使用 $verify-looma-plugin 验证 Looma 测试插件是否正常工作。"
