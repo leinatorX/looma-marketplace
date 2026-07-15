@@ -7,7 +7,7 @@
       "id": "looma-test-plugin",
       "name": "Looma 测试插件",
       "description": "用于验证 Looma 插件市场发现、启停和 Skill 触发链路的无副作用测试插件。",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": "leinatorX",
       "category": "开发",
       "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/looma-test-plugin",
@@ -15,7 +15,8 @@
       "files": [
         ".looma-plugin/plugin.json",
         "skills/verify-looma-plugin/SKILL.md",
-        "skills/verify-looma-plugin/agents/openai.yaml"
+        "skills/verify-looma-plugin/agents/openai.yaml",
+        "skills/verify-looma-plugin/scripts/verify.py"
       ],
       "source": {
         "type": "github",

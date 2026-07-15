@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/plugin.schema.json",
   "schemaVersion": 1,
   "name": "looma-test-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "用于验证 Looma 插件市场发现、启停和 Skill 触发链路的无副作用测试插件。",
   "author": {
     "name": "leinatorX",
@@ -20,4 +20,3 @@
     "brandColor": "#3B82F6"
   }
 }
-
