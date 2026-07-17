@@ -2,8 +2,8 @@
   "$schema": "../../../schemas/plugin.schema.json",
   "schemaVersion": 1,
   "name": "image-generator",
-  "version": "1.0.0",
-  "description": "Looma 内置图片生成技能 ImageGenerator：通过 gpt-image-2 兼容接口文生图/图生图，并将结果主动发送到当前会话。",
+  "version": "1.1.0",
+  "description": "Looma 内置图片生成技能 ImageGenerator：通过 gpt-image-2 兼容接口文生图/图生图，并将结果主动发送到当前会话；适配慢上游长轮询。",
   "author": {
     "name": "leinatorX",
     "url": "https://github.com/leinatorX"
