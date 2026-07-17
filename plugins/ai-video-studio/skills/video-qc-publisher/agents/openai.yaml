@@ -1,0 +1,4 @@
+interface:
+  display_name: "质检与发布"
+  short_description: "生成质检、重生成建议与平台发布包装。"
+  default_prompt: "使用 video-qc-publisher 检查生成结果并写发布文案包装。"

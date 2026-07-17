@@ -1,0 +1,4 @@
+interface:
+  display_name: "剧本策划"
+  short_description: "创意定位、钩子、短视频剧本与旁白字幕。"
+  default_prompt: "使用 video-script-writer 把创意写成可拍的短视频剧本。"

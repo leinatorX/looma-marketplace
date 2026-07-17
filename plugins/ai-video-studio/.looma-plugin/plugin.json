@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../schemas/plugin.schema.json",
+  "schemaVersion": 1,
+  "name": "ai-video-studio",
+  "version": "1.0.0",
+  "description": "AI 短视频导演工作室：总导演编排、剧本策划、序列分镜、参考资产、多模型提示词、质检与平台发布。从一句话到可生成、可剪辑、可发布的完整方案。",
+  "author": {
+    "name": "leinatorX",
+    "url": "https://github.com/leinatorX"
+  },
+  "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/ai-video-studio",
+  "repository": "https://github.com/leinatorX/looma-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "video",
+    "director",
+    "script",
+    "storyboard",
+    "prompt",
+    "veo",
+    "grok",
+    "seedance",
+    "short-video",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AI 视频工作室",
+    "shortDescription": "剧本 · 序列 · 资产 · 多模型提示词 · 质检发布",
+    "category": "创作",
+    "brandColor": "#F59E0B"
+  }
+}

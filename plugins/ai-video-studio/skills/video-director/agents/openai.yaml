@@ -1,0 +1,4 @@
+interface:
+  display_name: "视频总导演"
+  short_description: "全流程编排：剧本、资产、序列、提示词、质检发布。"
+  default_prompt: "使用 video-director 把一个短视频创意扩展成完整制作方案；默认视频模型 Grok Imagine Video，图像模型 GPT Image 2。"

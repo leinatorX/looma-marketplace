@@ -1,0 +1,4 @@
+interface:
+  display_name: "参考资产美术"
+  short_description: "定妆、场景道具、首尾帧与图生参考规划。"
+  default_prompt: "使用 video-asset-art 从剧本提炼关键资产并输出定妆与参考图提示词。"

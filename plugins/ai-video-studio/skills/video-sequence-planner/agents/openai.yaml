@@ -1,0 +1,4 @@
+interface:
+  display_name: "序列分镜"
+  short_description: "集→序列→镜头、合法时长与剪辑表。"
+  default_prompt: "使用 video-sequence-planner 把剧情拆成可生成的序列和可剪辑的镜头表。"

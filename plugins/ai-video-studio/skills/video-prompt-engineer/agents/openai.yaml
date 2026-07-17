@@ -1,0 +1,4 @@
+interface:
+  display_name: "视频提示词"
+  short_description: "序列级三段式 + Grok/Veo/Seedance 等模型适配。"
+  default_prompt: "使用 video-prompt-engineer 为序列写可直接使用的模型提示词；默认 Grok Imagine Video。"

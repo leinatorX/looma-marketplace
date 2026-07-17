@@ -4,6 +4,50 @@
   "updatedAt": "2026-07-17",
   "plugins": [
     {
+      "id": "ai-video-studio",
+      "name": "AI 视频工作室",
+      "description": "AI 短视频导演工作室：总导演、剧本策划、序列分镜、参考资产、多模型提示词、质检与平台发布。从一句话到可生成、可剪辑、可发布的完整方案。",
+      "version": "1.0.0",
+      "author": "leinatorX",
+      "category": "创作",
+      "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/ai-video-studio",
+      "manifest": "plugins/ai-video-studio/.looma-plugin/plugin.json",
+      "files": [
+        ".looma-plugin/plugin.json",
+        "README.md",
+        "skills/video-director/SKILL.md",
+        "skills/video-director/agents/openai.yaml",
+        "skills/video-director/references/workflow.md",
+        "skills/video-script-writer/SKILL.md",
+        "skills/video-script-writer/agents/openai.yaml",
+        "skills/video-script-writer/references/script-and-storyboard.md",
+        "skills/video-sequence-planner/SKILL.md",
+        "skills/video-sequence-planner/agents/openai.yaml",
+        "skills/video-sequence-planner/references/sequence-planning.md",
+        "skills/video-sequence-planner/references/shot-language.md",
+        "skills/video-asset-art/SKILL.md",
+        "skills/video-asset-art/agents/openai.yaml",
+        "skills/video-asset-art/references/image-asset-planning.md",
+        "skills/video-prompt-engineer/SKILL.md",
+        "skills/video-prompt-engineer/agents/openai.yaml",
+        "skills/video-prompt-engineer/references/model-prompting.md",
+        "skills/video-qc-publisher/SKILL.md",
+        "skills/video-qc-publisher/agents/openai.yaml",
+        "skills/video-qc-publisher/references/quality-check.md",
+        "skills/video-qc-publisher/references/platform-viral-logic.md"
+      ],
+      "source": {
+        "type": "github",
+        "repository": "leinatorX/looma-marketplace",
+        "ref": "main",
+        "path": "plugins/ai-video-studio"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "NONE"
+      }
+    },
+    {
       "id": "looma-test-plugin",
       "name": "Looma 测试插件",
       "description": "用于验证 Looma 插件市场发现、启停和 Skill 触发链路的无副作用测试插件。",
@@ -32,8 +76,8 @@
     {
       "id": "image-generator",
       "name": "ImageGenerator",
-      "description": "Looma 内置图片生成技能：通过 gpt-image-2 兼容接口文生图/图生图，并将结果主动发送到当前会话。",
-      "version": "1.0.0",
+      "description": "Looma 内置图片生成技能：通过 gpt-image-2 兼容接口文生图/图生图，并将结果主动发送到当前会话；适配慢上游长轮询。",
+      "version": "1.1.0",
       "author": "leinatorX",
       "category": "设计",
       "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/image-generator",
