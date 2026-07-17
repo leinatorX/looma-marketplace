@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/marketplace.schema.json",
   "version": 1,
-  "updatedAt": "2026-07-15",
+  "updatedAt": "2026-07-17",
   "plugins": [
     {
       "id": "looma-test-plugin",
@@ -27,6 +27,34 @@
       "policy": {
         "installation": "AVAILABLE",
         "authentication": "NONE"
+      }
+    },
+    {
+      "id": "image-generator",
+      "name": "ImageGenerator",
+      "description": "Looma 内置图片生成技能：通过 gpt-image-2 兼容接口文生图/图生图，并将结果主动发送到当前会话。",
+      "version": "1.0.0",
+      "author": "leinatorX",
+      "category": "设计",
+      "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/image-generator",
+      "manifest": "plugins/image-generator/.looma-plugin/plugin.json",
+      "files": [
+        ".looma-plugin/plugin.json",
+        "skills/image-generator/SKILL.md",
+        "skills/image-generator/agents/openai.yaml",
+        "skills/image-generator/scripts/generate_image.py",
+        "skills/image-generator/references/api.md",
+        "skills/image-generator/references/prompting.md"
+      ],
+      "source": {
+        "type": "github",
+        "repository": "leinatorX/looma-marketplace",
+        "ref": "main",
+        "path": "plugins/image-generator"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
       }
     }
   ]

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ImageGenerator"
+  short_description: "Looma 图片生成技能：调用 gpt-image-2 兼容接口，并把结果发回会话。"
+  default_prompt: "Use $image-generator to generate an image from my prompt and send the result into this conversation."
