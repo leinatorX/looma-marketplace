@@ -1,0 +1,44 @@
+{
+  "name": "looma-plugins",
+  "interface": {
+    "displayName": "Looma Plugins"
+  },
+  "plugins": [
+    {
+      "name": "ai-video-studio",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ai-video-studio"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Creativity"
+    },
+    {
+      "name": "image-generator",
+      "source": {
+        "source": "local",
+        "path": "./plugins/image-generator"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Creativity"
+    },
+    {
+      "name": "looma-test-plugin",
+      "source": {
+        "source": "local",
+        "path": "./plugins/looma-test-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
