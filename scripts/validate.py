@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""校验 Looma 插件清单、Skill 结构和市场索引。"""
+"""校验 Codex 官方格式的插件与 Marketplace（.agents/plugins/marketplace.json）。
+
+只校验官方字段与 Looma 发布质量，不要求 Looma 私有 manifest 或私有 files 白名单。
+"""
 
 from __future__ import annotations
 
@@ -9,9 +12,10 @@ import re
 import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
-
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
+MARKETPLACE_PATH = ROOT / ".agents" / "plugins" / "marketplace.json"
 NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
 SEMVER_PATTERN = re.compile(
     r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
@@ -19,6 +23,9 @@ SEMVER_PATTERN = re.compile(
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
 )
 HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
+INSTALLATION_VALUES = {"AVAILABLE", "INSTALLED_BY_DEFAULT", "NOT_AVAILABLE"}
+AUTHENTICATION_VALUES = {"ON_INSTALL", "ON_USE"}
+SOURCE_KINDS = {"local", "git-subdir", "url", "npm"}
 PLACEHOLDERS = ("Your Name", "your-account", "my-plugin", "my-skill")
 
 
@@ -76,19 +83,73 @@ def parse_skill_frontmatter(path: Path) -> dict[str, str]:
     return metadata
 
 
+def safe_relative_path(value: str, source: Path, base: Path) -> PurePosixPath:
+    """校验 ./ 开头的相对路径，且 canonicalize 后仍位于 base 之内。"""
+    if not isinstance(value, str) or not value:
+        raise ValidationError(f"{source} 的路径必须是非空字符串")
+    if not value.startswith("./") or "\\" in value:
+        raise ValidationError(f"{source} 的路径必须以 ./ 开头且不能包含反斜杠：{value}")
+    raw = PurePosixPath(value)
+    if ".." in raw.parts:
+        raise ValidationError(f"{source} 的路径不能包含 ..：{value}")
+    target = (base / value).resolve()
+    resolved_base = base.resolve()
+    if target != resolved_base and resolved_base not in target.parents:
+        raise ValidationError(f"{source} 的路径越过根目录：{value}")
+    return raw
+
+
+def url_without_credentials(value: str, source: Path) -> None:
+    parsed = urlparse(value)
+    if parsed.username is not None or parsed.password is not None:
+        raise ValidationError(f"{source} 的 URL 不允许内嵌凭据：{value}")
+
+
+def validate_manifest_paths(manifest: dict[str, Any], manifest_path: Path, plugin_dir: Path) -> None:
+    """校验 manifest 中所有路径字段（./ 开头、在插件根内、目标存在）。"""
+    for key in ("skills", "mcpServers", "apps", "hooks"):
+        value = manifest.get(key)
+        if value is None:
+            continue
+        values = value if isinstance(value, list) else [value]
+        for item in values:
+            if not isinstance(item, str):
+                raise ValidationError(f"{manifest_path} 的 {key} 必须是字符串或字符串数组")
+            safe_relative_path(item, manifest_path, plugin_dir)
+            if not (plugin_dir / item).exists():
+                raise ValidationError(f"{manifest_path} 引用的文件不存在：{item}")
+
+    interface = manifest.get("interface")
+    if isinstance(interface, dict):
+        for key in ("composerIcon", "logo", "logoDark"):
+            item = interface.get(key)
+            if item is None:
+                continue
+            if not isinstance(item, str):
+                raise ValidationError(f"{manifest_path} 的 interface.{key} 必须是字符串")
+            safe_relative_path(item, manifest_path, plugin_dir)
+            if not (plugin_dir / item).is_file():
+                raise ValidationError(f"{manifest_path} 引用的图片不存在：{item}")
+        screenshots = interface.get("screenshots")
+        if screenshots is not None:
+            if not isinstance(screenshots, list):
+                raise ValidationError(f"{manifest_path} 的 interface.screenshots 必须是数组")
+            for item in screenshots:
+                if not isinstance(item, str):
+                    raise ValidationError(f"{manifest_path} 的 interface.screenshots 元素必须是字符串")
+                safe_relative_path(item, manifest_path, plugin_dir)
+                if not (plugin_dir / item).is_file():
+                    raise ValidationError(f"{manifest_path} 引用的截图不存在：{item}")
+
+
 def validate_plugin(plugin_dir: Path, *, allow_template: bool = False) -> dict[str, Any]:
     plugin_dir = plugin_dir.resolve()
-    manifest_path = plugin_dir / ".looma-plugin" / "plugin.json"
+    manifest_path = plugin_dir / ".codex-plugin" / "plugin.json"
     manifest = load_json(manifest_path)
-
-    if manifest.get("schemaVersion") != 1:
-        raise ValidationError(f"schemaVersion 当前必须为 1：{manifest_path}")
 
     name = require_text(manifest, "name", manifest_path)
     version = require_text(manifest, "version", manifest_path)
     description = require_text(manifest, "description", manifest_path)
-    repository = require_text(manifest, "repository", manifest_path)
-    license_name = require_text(manifest, "license", manifest_path)
 
     if not NAME_PATTERN.fullmatch(name):
         raise ValidationError(f"插件 name 必须是小写 kebab-case，且不超过 64 字符：{name}")
@@ -98,25 +159,17 @@ def validate_plugin(plugin_dir: Path, *, allow_template: bool = False) -> dict[s
         raise ValidationError(f"插件 version 不是合法 SemVer：{version}")
     if len(description) < 10:
         raise ValidationError(f"插件 description 至少需要 10 个字符：{manifest_path}")
-    if not repository.startswith(("https://", "http://")):
-        raise ValidationError(f"repository 必须是 HTTP(S) URL：{manifest_path}")
-    if not license_name:
-        raise ValidationError(f"license 不能为空：{manifest_path}")
 
-    author = manifest.get("author")
-    if not isinstance(author, dict) or not isinstance(author.get("name"), str) or not author["name"].strip():
-        raise ValidationError(f"author.name 必须是非空字符串：{manifest_path}")
-
-    if manifest.get("skills") != "./skills/":
-        raise ValidationError(f"skills 当前必须为 ./skills/：{manifest_path}")
+    validate_manifest_paths(manifest, manifest_path, plugin_dir)
 
     interface = manifest.get("interface")
-    if not isinstance(interface, dict):
-        raise ValidationError(f"interface 必须是对象：{manifest_path}")
-    for key in ("displayName", "shortDescription", "category", "brandColor"):
-        require_text(interface, key, manifest_path)
-    if not HEX_COLOR_PATTERN.fullmatch(interface["brandColor"]):
-        raise ValidationError(f"interface.brandColor 必须是六位十六进制颜色：{manifest_path}")
+    if interface is not None:
+        if not isinstance(interface, dict):
+            raise ValidationError(f"interface 必须是对象：{manifest_path}")
+        if "brandColor" in interface and not HEX_COLOR_PATTERN.fullmatch(interface["brandColor"]):
+            raise ValidationError(f"interface.brandColor 必须是六位十六进制颜色：{manifest_path}")
+        if "capabilities" in interface and not isinstance(interface["capabilities"], list):
+            raise ValidationError(f"interface.capabilities 必须是字符串数组：{manifest_path}")
 
     if not allow_template:
         serialized = json.dumps(manifest, ensure_ascii=False)
@@ -124,112 +177,119 @@ def validate_plugin(plugin_dir: Path, *, allow_template: bool = False) -> dict[s
         if matched:
             raise ValidationError(f"插件仍包含模板占位符 {matched}：{manifest_path}")
 
+    skills_value = manifest.get("skills")
     skills_dir = plugin_dir / "skills"
-    skill_files = sorted(skills_dir.glob("*/SKILL.md")) if skills_dir.is_dir() else []
-    if not skill_files:
-        raise ValidationError(f"插件至少需要一个 skills/<name>/SKILL.md：{plugin_dir}")
+    if skills_value is not None or skills_dir.is_dir():
+        if not skills_dir.is_dir():
+            raise ValidationError(f"manifest 声明 skills 但目录不存在：{plugin_dir}")
+        skill_files = sorted(skills_dir.glob("*/SKILL.md"))
+        if not skill_files:
+            raise ValidationError(f"插件至少需要一个 skills/<name>/SKILL.md：{plugin_dir}")
+        skill_names: set[str] = set()
+        for skill_file in skill_files:
+            metadata = parse_skill_frontmatter(skill_file)
+            skill_name = metadata["name"]
+            if not NAME_PATTERN.fullmatch(skill_name):
+                raise ValidationError(f"Skill name 必须是小写 kebab-case：{skill_file}")
+            if skill_file.parent.name != skill_name:
+                raise ValidationError(
+                    f"Skill 目录名必须与 frontmatter name 一致：{skill_file.parent.name} != {skill_name}"
+                )
+            if skill_name in skill_names:
+                raise ValidationError(f"插件内 Skill name 重复：{skill_name}")
+            skill_names.add(skill_name)
 
-    skill_names: set[str] = set()
-    for skill_file in skill_files:
-        metadata = parse_skill_frontmatter(skill_file)
-        skill_name = metadata["name"]
-        if not NAME_PATTERN.fullmatch(skill_name):
-            raise ValidationError(f"Skill name 必须是小写 kebab-case：{skill_file}")
-        if skill_file.parent.name != skill_name:
-            raise ValidationError(
-                f"Skill 目录名必须与 frontmatter name 一致：{skill_file.parent.name} != {skill_name}"
-            )
-        if skill_name in skill_names:
-            raise ValidationError(f"插件内 Skill name 重复：{skill_name}")
-        skill_names.add(skill_name)
-
-    print(f"插件校验通过：{name} {version}（{len(skill_names)} 个 Skill）")
+    print(f"插件校验通过：{name} {version}")
     return manifest
 
 
-def validate_marketplace(path: Path) -> None:
-    catalog = load_json(path)
-    if catalog.get("version") != 1:
-        raise ValidationError(f"市场 version 当前必须为 1：{path}")
-    updated_at = require_text(catalog, "updatedAt", path)
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", updated_at):
-        raise ValidationError(f"updatedAt 必须是 YYYY-MM-DD：{path}")
+def validate_marketplace_entry(
+    entry: dict[str, Any], index: int, marketplace_path: Path, marketplace_root: Path
+) -> str:
+    source = marketplace_path
+    name = require_text(entry, "name", source)
+    if not NAME_PATTERN.fullmatch(name):
+        raise ValidationError(f"plugins[{index}] name 必须是小写 kebab-case：{name}")
 
-    plugins = catalog.get("plugins")
+    entry_source = entry.get("source")
+    if not isinstance(entry_source, dict):
+        raise ValidationError(f"plugins[{index}] 缺少 source 对象：{name}")
+    kind = entry_source.get("source")
+    if kind not in SOURCE_KINDS:
+        raise ValidationError(f"plugins[{index}] source.source 无效：{kind}")
+    if kind == "local":
+        local_path = require_text(entry_source, "path", source)
+        relative = safe_relative_path(local_path, source, marketplace_root)
+        plugin_dir = (marketplace_root / str(relative)).resolve()
+        if not plugin_dir.is_dir():
+            raise ValidationError(f"plugins[{index}] 的插件目录不存在：{local_path}")
+        manifest = validate_plugin(plugin_dir)
+        if manifest["name"] != name:
+            raise ValidationError(
+                f"plugins[{index}] 名称与插件清单 name 不一致：{name} != {manifest['name']}"
+            )
+    elif kind == "git-subdir":
+        url = require_text(entry_source, "url", source)
+        url_without_credentials(url, source)
+        safe_relative_path(require_text(entry_source, "path", source), source, marketplace_root)
+    elif kind == "url":
+        url = require_text(entry_source, "url", source)
+        url_without_credentials(url, source)
+    elif kind == "npm":
+        require_text(entry_source, "package", source)
+        registry = entry_source.get("registry")
+        if registry is not None:
+            if not isinstance(registry, str) or not registry.startswith("https://"):
+                raise ValidationError(f"plugins[{index}] npm registry 必须是 HTTPS URL：{name}")
+            parsed = urlparse(registry)
+            if parsed.username is not None or parsed.password is not None or parsed.query or parsed.fragment:
+                raise ValidationError(f"plugins[{index}] npm registry 不允许凭据、查询或片段：{name}")
+
+    policy = entry.get("policy")
+    if not isinstance(policy, dict):
+        raise ValidationError(f"plugins[{index}] 缺少 policy 对象：{name}")
+    if policy.get("installation") not in INSTALLATION_VALUES:
+        raise ValidationError(f"plugins[{index}] policy.installation 无效：{name}")
+    if policy.get("authentication") not in AUTHENTICATION_VALUES:
+        raise ValidationError(f"plugins[{index}] policy.authentication 无效：{name}")
+
+    require_text(entry, "category", source)
+    return name
+
+
+def validate_marketplace(path: Path) -> None:
+    marketplace = load_json(path)
+    require_text(marketplace, "name", path)
+
+    interface = marketplace.get("interface")
+    if interface is not None and not isinstance(interface, dict):
+        raise ValidationError(f"interface 必须是对象：{path}")
+
+    plugins = marketplace.get("plugins")
     if not isinstance(plugins, list):
         raise ValidationError(f"plugins 必须是数组：{path}")
+
+    # source.path 相对 marketplace 根目录解析（官方规则：不是相对 .agents/plugins/ 目录）
+    marketplace_root = path.resolve().parent.parent.parent
 
     seen: set[str] = set()
     for index, entry in enumerate(plugins):
         if not isinstance(entry, dict):
             raise ValidationError(f"plugins[{index}] 必须是对象：{path}")
-        plugin_id = require_text(entry, "id", path)
-        if plugin_id in seen:
-            raise ValidationError(f"市场插件 ID 重复：{plugin_id}")
-        seen.add(plugin_id)
-        if not NAME_PATTERN.fullmatch(plugin_id):
-            raise ValidationError(f"市场插件 ID 必须是小写 kebab-case：{plugin_id}")
+        name = validate_marketplace_entry(entry, index, path, marketplace_root)
+        if name in seen:
+            raise ValidationError(f"市场插件条目重复：{name}")
+        seen.add(name)
 
-        for key in ("name", "description", "version", "author", "category", "homepage", "manifest"):
-            require_text(entry, key, path)
-        if not SEMVER_PATTERN.fullmatch(entry["version"]):
-            raise ValidationError(f"市场插件 version 不是合法 SemVer：{plugin_id}")
-
-        expected_manifest = f"plugins/{plugin_id}/.looma-plugin/plugin.json"
-        if entry["manifest"] != expected_manifest:
-            raise ValidationError(f"市场 manifest 必须为 {expected_manifest}：{plugin_id}")
-        manifest_path = ROOT / expected_manifest
-        manifest = validate_plugin(manifest_path.parents[1])
-        if manifest["name"] != plugin_id:
-            raise ValidationError(f"市场 ID 与插件清单 name 不一致：{plugin_id}")
-        if manifest["version"] != entry["version"]:
-            raise ValidationError(f"市场与插件清单 version 不一致：{plugin_id}")
-
-        files = entry.get("files")
-        if not isinstance(files, list) or not files or not all(isinstance(item, str) for item in files):
-            raise ValidationError(f"市场 files 必须是非空字符串数组：{plugin_id}")
-        if len(files) != len(set(files)):
-            raise ValidationError(f"市场 files 不能包含重复路径：{plugin_id}")
-        for item in files:
-            path = PurePosixPath(item)
-            if path.is_absolute() or ".." in path.parts or "\\" in item:
-                raise ValidationError(f"市场 files 包含不安全路径：{plugin_id} -> {item}")
-        plugin_root = ROOT / "plugins" / plugin_id
-        actual_files = sorted(
-            path.relative_to(plugin_root).as_posix()
-            for path in plugin_root.rglob("*")
-            if path.is_file()
-        )
-        if sorted(files) != actual_files:
-            raise ValidationError(
-                f"市场 files 与插件目录不一致：{plugin_id}，声明={sorted(files)}，实际={actual_files}"
-            )
-
-        source = entry.get("source")
-        if not isinstance(source, dict) or source.get("type") != "github":
-            raise ValidationError(f"source.type 当前必须为 github：{plugin_id}")
-        if source.get("path") != f"plugins/{plugin_id}":
-            raise ValidationError(f"source.path 与插件 ID 不一致：{plugin_id}")
-        for key in ("repository", "ref"):
-            require_text(source, key, path)
-
-        policy = entry.get("policy")
-        if not isinstance(policy, dict):
-            raise ValidationError(f"policy 必须是对象：{plugin_id}")
-        if policy.get("installation") not in {"AVAILABLE", "BLOCKED"}:
-            raise ValidationError(f"policy.installation 无效：{plugin_id}")
-        if policy.get("authentication") not in {"NONE", "ON_USE", "REQUIRED"}:
-            raise ValidationError(f"policy.authentication 无效：{plugin_id}")
-
-    print(f"市场校验通过：{len(plugins)} 个插件")
+    print(f"市场校验通过：{path}（{len(plugins)} 个插件）")
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="校验 Looma 插件与市场索引")
+    parser = argparse.ArgumentParser(description="校验 Codex 官方格式插件与 Marketplace")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--plugin", type=Path, help="要校验的插件目录")
-    group.add_argument("--marketplace", type=Path, help="要校验的市场 JSON")
-    group.add_argument("--all", action="store_true", help="校验模板、市场和所有已发布插件")
+    group.add_argument("--marketplace", type=Path, help="要校验的 Marketplace JSON")
+    group.add_argument("--all", action="store_true", help="校验模板与仓库 Marketplace")
     return parser.parse_args()
 
 
@@ -242,7 +302,7 @@ def main() -> int:
             validate_marketplace(args.marketplace)
         else:
             validate_plugin(ROOT / "templates" / "basic-plugin", allow_template=True)
-            validate_marketplace(ROOT / "marketplace.json")
+            validate_marketplace(MARKETPLACE_PATH)
             print("全部校验通过")
     except (OSError, ValidationError) as exc:
         print(f"校验失败：{exc}", file=sys.stderr)

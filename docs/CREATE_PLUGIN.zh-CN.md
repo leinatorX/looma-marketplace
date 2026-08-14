@@ -2,6 +2,7 @@
 
 本文面向两类创建者：手工开发插件的用户，以及需要自动生成插件的 Agent。文中的
 “必须”是市场校验与审核要求，“建议”是有助于插件稳定触发和长期维护的实践。
+插件采用 **Codex 官方格式**：Codex 与 Looma 都可以直接发现并安装本市场的插件。
 
 ## 1. 先理解三个独立概念
 
@@ -9,13 +10,13 @@ Looma 将插件、MCP 和个人技能明确分开：
 
 | 类型 | 来源 | 存放位置 | 管理方式 |
 | --- | --- | --- | --- |
-| 插件 | Looma GitHub 插件市场 | 市场下载与缓存目录 | 在“插件”选项卡启停 |
+| 插件 | Looma 插件市场（Codex 官方格式） | 市场缓存目录（由宿主管理） | 在“插件”选项卡安装、启停 |
 | MCP | 用户本地配置 | `~/.looma/mcp/servers.json` | 用户新增、编辑、检测、启停、删除 |
 | 个人技能 | 用户自己维护 | `~/.looma/skills/<skill-name>` | 在“技能”选项卡启停 |
 
-一个市场插件是一个可版本化的 Skill 集合。插件当前不承载 MCP Server，也不能写入
-用户 MCP 配置。需要 MCP 的插件，应在文档中说明依赖，由用户自行在 Looma 界面配置；
-不要随插件自动创建、修改或启用 MCP。
+一个市场插件是一个可版本化的 Skill 集合，也可以包含 `.mcp.json`（随插件分发的
+MCP Server）与 `hooks/`（生命周期钩子）。插件不得写入用户 MCP 配置，不得在仓库中
+提交 API Key、Token 或其他密钥。
 
 ## 2. 环境准备
 
@@ -39,7 +40,7 @@ Set-Location looma-marketplace
 
 ```text
 plugins/my-plugin/
-├── .looma-plugin/
+├── .codex-plugin/
 │   └── plugin.json
 └── skills/
     └── my-skill/
@@ -50,11 +51,14 @@ plugins/my-plugin/
 
 ```text
 plugins/my-plugin/
-└── skills/my-skill/
-    ├── SKILL.md
-    ├── scripts/       # 可执行辅助脚本
-    ├── references/    # 按需读取的参考资料
-    └── assets/        # 模板、图标或输出资源
+├── .codex-plugin/plugin.json
+├── skills/my-skill/
+│   ├── SKILL.md
+│   ├── scripts/       # 可执行辅助脚本
+│   ├── references/    # 按需读取的参考资料
+│   └── assets/        # 模板、图标或输出资源
+├── .mcp.json          # 随插件分发的 MCP Server（仅在确实需要时）
+└── hooks/hooks.json   # 生命周期钩子（仅在确实需要时）
 ```
 
 命名规则：
@@ -62,7 +66,7 @@ plugins/my-plugin/
 - 插件目录名和 Skill 目录名只能使用小写字母、数字和短横线；
 - 必须以字母或数字开头和结尾；
 - 长度不超过 64 个字符；
-- 插件目录名、`plugin.json.name`、市场条目 `id` 三者必须相同；
+- 插件目录名与 `plugin.json.name` 必须相同；
 - Skill 目录名与 `SKILL.md` frontmatter 中的 `name` 必须相同。
 
 ## 4. 从模板创建
@@ -75,21 +79,19 @@ Copy-Item -Recurse templates/basic-plugin plugins/my-plugin
 
 至少需要修改：
 
-1. `plugins/my-plugin/.looma-plugin/plugin.json`；
+1. `plugins/my-plugin/.codex-plugin/plugin.json`；
 2. Skill 目录名；
 3. `SKILL.md` 的 `name`、`description` 和正文；
-4. 根目录 `marketplace.json` 中的插件条目。
+4. `.agents/plugins/marketplace.json` 中的插件条目。
 
 不要原样提交 `example-plugin`、`hello-looma`、`Your Name` 或示例 URL。
 
 ## 5. 编写插件清单
 
-`.looma-plugin/plugin.json` 示例：
+`.codex-plugin/plugin.json` 示例：
 
 ```json
 {
-  "$schema": "../../../schemas/plugin.schema.json",
-  "schemaVersion": 1,
   "name": "my-plugin",
   "version": "1.0.0",
   "description": "帮助用户完成某类明确任务的插件。",
@@ -105,8 +107,12 @@ Copy-Item -Recurse templates/basic-plugin plugins/my-plugin
   "interface": {
     "displayName": "My Plugin",
     "shortDescription": "一句话说明插件能解决什么问题。",
-    "category": "效率",
-    "brandColor": "#3B82F6"
+    "developerName": "Your Name",
+    "category": "Productivity",
+    "brandColor": "#3B82F6",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "screenshots": ["./assets/screenshot-1.png"]
   }
 }
 ```
@@ -115,21 +121,23 @@ Copy-Item -Recurse templates/basic-plugin plugins/my-plugin
 
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
-| `$schema` | 建议 | 编辑器校验地址；发布目录中的相对路径通常是 `../../../schemas/plugin.schema.json` |
-| `schemaVersion` | 是 | 清单格式版本，当前固定为 `1` |
 | `name` | 是 | 插件稳定标识，小写 kebab-case，发布后不要更改 |
 | `version` | 是 | SemVer，例如 `1.0.0`、`1.2.0-beta.1` |
 | `description` | 是 | 插件用途，建议 20–200 个字符 |
-| `author` | 是 | 作者名称，可附主页 URL |
+| `author` | 否 | 作者名称、邮箱或主页 URL |
 | `homepage` | 否 | 插件介绍、文档或仓库内目录地址 |
-| `repository` | 是 | 源代码仓库 URL |
-| `license` | 是 | SPDX 许可证标识，例如 `MIT`、`Apache-2.0` |
-| `keywords` | 否 | 用于搜索，最多 10 个，单项不超过 32 个字符 |
-| `skills` | 是 | Skill 根目录，当前固定为 `./skills/` |
-| `interface` | 是 | 市场展示信息 |
+| `repository` | 否 | 源代码仓库 URL |
+| `license` | 否 | SPDX 许可证标识，例如 `MIT`、`Apache-2.0` |
+| `keywords` | 否 | 用于搜索 |
+| `skills` | 是 | Skill 根目录，指向 `./skills/` |
+| `mcpServers` | 否 | 指向 `.mcp.json`（随插件分发的 MCP） |
+| `apps` | 否 | 指向 `.app.json`（已注册 MCP 连接的兼容映射） |
+| `hooks` | 否 | 指向 hooks 定义文件，默认 `./hooks/hooks.json` |
+| `interface` | 建议 | 市场展示信息 |
 
-`interface.category` 应选择稳定、易理解的中文分类，例如“开发”“效率”“写作”“设计”或
-“数据”。`brandColor` 必须是六位十六进制颜色，仅用于展示，不应承载状态含义。
+清单内所有路径必须以 `./` 开头并保持在插件根目录内，且必须指向真实存在的文件。
+`interface.brandColor` 必须是六位十六进制颜色，仅用于展示，不应承载状态含义。
+`composerIcon`、`logo`、`screenshots` 建议放在 `./assets/` 下。
 
 ## 6. 编写 Skill
 
@@ -173,10 +181,7 @@ description: 当用户需要完成某类明确任务、提到相关关键词或�
 如果提供 `scripts/`：
 
 - 默认使用确定性、非交互命令；
-- Looma 只发现 `.py`、`.js`、`.mjs`、`.cjs`、`.ps1` 和 `.sh`，其他文件不会作为可执行脚本暴露；
-- 在 `SKILL.md` 中明确脚本相对路径、适用条件、参数和输出，Agent 加载 Skill 后才会看到对应脚本；
-- Agent 可以根据 Skill 指令自动选择脚本，但脚本始终由 Looma 宿主启动，不获得 MCP 凭据；
-- Skill 脚本最长运行 60 秒，参数数量、输出大小和工作目录均受 Looma 限制；
+- 在 `SKILL.md` 中明确脚本相对路径、适用条件、参数和输出；
 - 明确依赖版本和安装方式；
 - 写操作限制在用户明确指定的目录；
 - 删除、覆盖、发布、发送消息等高影响操作必须要求用户确认；
@@ -185,46 +190,34 @@ description: 当用户需要完成某类明确任务、提到相关关键词或�
 
 ## 7. 添加市场条目
 
-在根目录 `marketplace.json` 的 `plugins` 数组末尾追加：
+在 `.agents/plugins/marketplace.json` 的 `plugins` 数组末尾追加：
 
 ```json
 {
-  "id": "my-plugin",
-  "name": "My Plugin",
-  "description": "帮助用户完成某类明确任务的插件。",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "category": "效率",
-  "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/my-plugin",
-  "manifest": "plugins/my-plugin/.looma-plugin/plugin.json",
-  "files": [
-    ".looma-plugin/plugin.json",
-    "skills/my-skill/SKILL.md",
-    "skills/my-skill/scripts/run.py"
-  ],
+  "name": "my-plugin",
   "source": {
-    "type": "github",
-    "repository": "leinatorX/looma-marketplace",
-    "ref": "main",
-    "path": "plugins/my-plugin"
+    "source": "local",
+    "path": "./plugins/my-plugin"
   },
   "policy": {
     "installation": "AVAILABLE",
-    "authentication": "ON_USE"
-  }
+    "authentication": "ON_INSTALL"
+  },
+  "category": "Productivity"
 }
 ```
 
-同时把顶层 `updatedAt` 改为当天的 `YYYY-MM-DD`。条目规则：
+条目规则：
 
-- `id`、`version` 必须与插件清单一致；
-- `description`、`author`、`category` 是 Looma 列表当前直接展示的字段；
-- `manifest` 必须指向仓库内真实文件；
-- `files` 必须列出插件目录内的全部文件，路径相对于 `plugins/<plugin-id>`；客户端只下载清单中声明的文件；
-- `source.repository` 使用 `owner/repository`；
-- `source.ref` 当前使用 `main`，以后可改为固定 tag 以提供不可变版本；
-- `policy.installation` 当前固定为 `AVAILABLE`；
-- `policy.authentication` 表示外部服务何时需要用户认证，不允许在清单中保存密钥。
+- `name` 必须与插件清单 `name` 一致，且不与其他条目重复；
+- `source.source` 可以是 `local`（本仓库内路径）、`git-subdir`、`url` 或 `npm`；
+- `source.path` 必须以 `./` 开头并保持在 Marketplace 根目录内；
+- URL 不允许内嵌用户名、密码或 Token；
+- `policy.installation` 取值 `AVAILABLE` / `INSTALLED_BY_DEFAULT` / `NOT_AVAILABLE`；
+- `policy.authentication` 取值 `ON_INSTALL` / `ON_USE`，表示外部服务何时需要用户认证；
+- `category` 必填，建议使用官方分类词汇（`Productivity`、`Developer Tools`、
+  `Creativity`、`Communication`、`Data & Analytics` 等）；
+- 不允许在清单中保存密钥。
 
 ## 8. 本地校验
 
@@ -238,36 +231,37 @@ python scripts/validate.py --plugin plugins/my-plugin
 
 ```powershell
 python scripts/validate.py --all
+python -m unittest discover -s tests -p "test_*.py"
 ```
 
 成功时输出 `校验通过`。脚本会检查：
 
 - JSON 能否解析；
 - 清单必填字段、命名和 SemVer；
-- 插件目录、清单名称和市场 ID 是否一致；
+- 插件目录名与清单名称是否一致；
 - Skill frontmatter 和目录名称是否一致；
-- 市场 ID 是否重复；
-- `manifest` 是否存在；
-- `files` 是否与插件目录中的真实文件完全一致；
-- 市场版本是否与插件版本一致；
+- 清单声明的 skills / MCP / hooks / 图标 / 截图是否存在；
+- 市场条目是否缺少 `source`、`policy.installation`、`policy.authentication`、`category`；
+- 条目是否重复、路径是否以 `./` 开头、是否越过根目录、URL 是否内嵌凭据；
 - 常见示例占位符是否仍然存在。
-
-JSON Schema 也可用于编辑器实时提示：
-
-- `schemas/plugin.schema.json`
-- `schemas/marketplace.schema.json`
 
 ## 9. 本地试用
 
-当前 Looma 会直接扫描 `~/.looma/skills` 中的个人 Skill。开发阶段可以把某个 Skill 复制
-到个人目录，重启或刷新 Looma 后检查名称、描述和启停状态：
+用 Codex 官方 CLI 直接验证市场与插件：
+
+```powershell
+codex plugin marketplace add . --ref main
+codex plugin marketplace list
+codex plugin list
+codex plugin add my-plugin@looma-plugins
+```
+
+开发阶段也可以把某个 Skill 复制到个人目录，重启或刷新 Looma 后检查名称、描述和
+启停状态：
 
 ```powershell
 Copy-Item -Recurse plugins/my-plugin/skills/my-skill "$HOME/.looma/skills/my-skill"
 ```
-
-测试结束后由用户自行删除该测试副本。这个步骤只验证 Skill 内容，不代表市场安装流程
-已经完成。市场插件的完整下载、完整性校验和安装运行时仍由 Looma 客户端版本决定。
 
 建议至少测试：
 
@@ -296,15 +290,16 @@ Pull Request 说明至少包含：
 - 示例输入与预期输出；
 - 安全边界和已知限制。
 
-审核通过并合并到 `main` 后，Looma 用户刷新插件市场即可读取新条目。客户端是否能安装
-并运行该插件，取决于当时 Looma 已实现的插件运行时能力；请勿在说明中超前承诺。
+审核通过并合并到 `main` 后，Codex 用户执行
+`codex plugin marketplace add leinatorX/looma-marketplace --ref main`，Looma 用户在
+插件页添加对应来源即可发现该插件。
 
 ## 11. 更新、弃用和兼容性
 
 - 修复错别字或非行为文档：提升 patch，例如 `1.0.0 → 1.0.1`；
 - 新增兼容能力或 Skill：提升 minor，例如 `1.0.0 → 1.1.0`；
 - 破坏既有调用方式：提升 major，例如 `1.0.0 → 2.0.0`；
-- 同时更新 `plugin.json.version`、市场条目 `version` 和 `updatedAt`；
+- 同时更新 `.codex-plugin/plugin.json` 中的 `version`；
 - 不要复用旧版本号发布不同内容；
 - 弃用插件时先在说明中给迁移方案，不要直接删除导致现有用户失去来源。
 
@@ -312,18 +307,18 @@ Pull Request 说明至少包含：
 
 Agent 应按以下顺序执行，不能跳过验证：
 
-1. 阅读本文件、两个 JSON Schema 和 `templates/basic-plugin`；
+1. 阅读本文件、`templates/basic-plugin` 与 `scripts/validate.py`；
 2. 向用户确认插件目标、名称、作者、许可证和包含的 Skill；
 3. 确认需求是否真的需要插件；单个私人 Skill 应优先放 `~/.looma/skills`；
 4. 确认不会把 MCP 配置、API Key 或用户私有数据打包进插件；
 5. 创建 `plugins/<plugin-name>`，名称使用小写 kebab-case；
-6. 填写真实的 `plugin.json`，清除所有模板占位符；
+6. 填写真实的 `.codex-plugin/plugin.json`，清除所有模板占位符；
 7. 为每个 Skill 创建合法 `SKILL.md`，让触发描述具体可判定；
-8. 仅在必要时添加 `scripts/`、`references/`、`assets/`；
+8. 仅在必要时添加 `scripts/`、`references/`、`assets/`、`.mcp.json`、`hooks/`；
 9. 执行 `python scripts/validate.py --plugin plugins/<plugin-name>`；
 10. 用命中和不命中场景测试每个 Skill；
-11. 在 `marketplace.json` 末尾追加条目并更新 `updatedAt`；
-12. 执行 `python scripts/validate.py --all`；
+11. 在 `.agents/plugins/marketplace.json` 末尾追加条目；
+12. 执行 `python scripts/validate.py --all` 与单元测试；
 13. 检查 `git diff`，确保没有密钥、缓存、个人路径或无关文件；
 14. 向用户报告改动、验证结果、外部依赖、风险和未验证项；
 15. 只有获得用户授权后，才提交、推送或创建 Pull Request。
@@ -331,7 +326,7 @@ Agent 应按以下顺序执行，不能跳过验证：
 Agent 不得：
 
 - 自行扩大插件权限或引入未确认的基础设施；
-- 修改 Looma 公共协议来迁就单个插件；
+- 修改官方插件格式来迁就单个插件；
 - 在插件中提供自动写入 MCP 配置的后门；
 - 把“市场已展示”描述成“运行时已安装并执行”；
 - 在没有实际执行校验时声称校验通过。
@@ -342,14 +337,20 @@ Agent 不得：
 
 可以。每个 Skill 使用独立目录和 `SKILL.md`，职责应清晰，不要把互不相关的能力强行打包。
 
-### 插件可以启动 MCP Server 吗？
+### 插件可以随包分发 MCP Server 吗？
 
-不可以。插件可以在文档中说明可选的 MCP 依赖，但 MCP 配置与启停完全由用户管理。
+可以。把 MCP 配置写入插件根目录的 `.mcp.json`，并在清单中用 `mcpServers` 声明。
+安装后由宿主（Codex / Looma）管理启用与审批，凭据不得写入插件仓库。
+
+### 插件的 Hooks 会被自动信任吗？
+
+不会。宿主在用户显式审查并信任 Hooks 之前不会执行它们；插件升级导致 Hooks 内容
+变化时需要重新确认。
 
 ### API Key 应放在哪里？
 
 不要放进插件或市场仓库。需要密钥时，在 Skill 中指导用户通过对应服务的安全配置方式
-提供。MCP 使用的环境变量由用户在 Looma MCP 设置中配置，并只保存在用户本地。
+提供，或由宿主的安全凭据机制注入。
 
 ### 私人 Skill 必须发布为插件吗？
 
