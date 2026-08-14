@@ -27,6 +27,7 @@
     "shortDescription": "剧本 → 分镜 → 参考资产 → 多模型提示词 → 质检发布",
     "developerName": "leinatorX",
     "category": "Creativity",
-    "brandColor": "#F59E0B"
+    "brandColor": "#F59E0B",
+    "composerIcon": "./assets/icon.png"
   }
 }

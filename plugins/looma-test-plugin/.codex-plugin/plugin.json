@@ -16,6 +16,7 @@
     "shortDescription": "验证插件市场发现、启停与 Skill 触发链路",
     "developerName": "leinatorX",
     "category": "Developer Tools",
-    "brandColor": "#3B82F6"
+    "brandColor": "#3B82F6",
+    "composerIcon": "./assets/icon.png"
   }
 }
