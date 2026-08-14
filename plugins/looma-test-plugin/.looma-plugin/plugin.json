@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/plugin.schema.json",
   "schemaVersion": 1,
   "name": "looma-test-plugin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "用于验证 Looma 插件市场发现、启停和 Skill 触发链路的无副作用测试插件。",
   "author": {
     "name": "leinatorX",
@@ -11,7 +11,11 @@
   "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/looma-test-plugin",
   "repository": "https://github.com/leinatorX/looma-marketplace",
   "license": "MIT",
-  "keywords": ["test", "verification", "looma"],
+  "keywords": [
+    "test",
+    "verification",
+    "looma"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Looma 测试插件",

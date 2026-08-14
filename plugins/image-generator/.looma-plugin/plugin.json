@@ -2,7 +2,7 @@
   "$schema": "../../../schemas/plugin.schema.json",
   "schemaVersion": 1,
   "name": "image-generator",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Looma 内置图片生成技能 ImageGenerator：通过 gpt-image-2 兼容接口文生图/图生图，并将结果主动发送到当前会话；适配慢上游长轮询。",
   "author": {
     "name": "leinatorX",
@@ -11,7 +11,13 @@
   "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/image-generator",
   "repository": "https://github.com/leinatorX/looma-marketplace",
   "license": "MIT",
-  "keywords": ["image", "generator", "gpt-image-2", "design", "looma"],
+  "keywords": [
+    "image",
+    "generator",
+    "gpt-image-2",
+    "design",
+    "looma"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "ImageGenerator",

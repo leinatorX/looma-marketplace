@@ -1,6 +1,6 @@
 {
   "name": "ai-video-studio",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AI 短视频导演工作室：总导演、剧本策划、序列分镜、参考资产、多模型提示词、质检与平台发布。从一句话到可生成、可剪辑、可发布的完整方案。",
   "author": {
     "name": "leinatorX",
