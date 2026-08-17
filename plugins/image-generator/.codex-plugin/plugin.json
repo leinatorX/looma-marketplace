@@ -18,7 +18,7 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "ImageGenerator",
+    "displayName": "图片生成器",
     "shortDescription": "生成图片并直接发送到当前会话，支持文生图与参考图编辑。",
     "developerName": "leinatorX",
     "category": "Creativity",
