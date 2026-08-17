@@ -49,6 +49,7 @@ description: AI 视频参考资产与定妆美术指导。负责从剧本提炼�
 
 - 无剧本 → `video-script-writer`  
 - 资产齐后 → `video-sequence-planner` / `video-prompt-engineer`  
+- 只需单张/单类图的提示词、或图生图编辑提示词 → `video-image-prompt`（本技能负责资产清单与整体规划，单图提示词可交给该技能）
 - 真要出图 → 可建议 ImageGenerator 等执行类插件  
 
 ## 边界

@@ -1,6 +1,6 @@
 # AI 视频工作室（ai-video-studio）
 
-将 AI 短视频导演工作流拆为 **6 个专职 Skill**，便于在 Looma 中按需加载。
+将 AI 短视频导演工作流拆为 **7 个专职 Skill**，便于在 Looma 中按需加载。
 
 ## Skills
 
@@ -10,6 +10,7 @@
 | `video-script-writer` | 剧本与创意定位 | 写剧本、钩子、旁白字幕 |
 | `video-sequence-planner` | 集→序列→镜头、合法时长 | 分镜、序列表、剪辑表 |
 | `video-asset-art` | 定妆/场景/道具/首尾帧图提示词 | 角色一致性、参考图规划 |
+| `video-image-prompt` | 单张/单类参考图提示词、图生图编辑提示词 | 写图 prompt、出图提示词、封面/海报提示词 |
 | `video-prompt-engineer` | 序列级三段式 + 多模型适配 | Grok / Veo / Seedance 等提示词 |
 | `video-qc-publisher` | 质检与平台发布包装 | 检查生成结果、发布文案 |
 

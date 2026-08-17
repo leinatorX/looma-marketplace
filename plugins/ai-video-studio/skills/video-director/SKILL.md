@@ -16,7 +16,8 @@ description: AI 视频总导演编排。把一句话创意扩成完整制作方�
 | Skill | 职责 |
 | --- | --- |
 | `video-script-writer` | 创意定位与剧本 |
-| `video-asset-art` | 定妆照与参考资产图提示词 |
+| `video-asset-art` | 定妆照、三视图、道具/场景/风格帧与首尾帧图像提示词及参考资产规划 |
+| `video-image-prompt` | 单张/单类参考图提示词：定妆照、三视图、道具、场景、风格帧、首尾帧，默认 GPT Image 2 |
 | `video-sequence-planner` | 集→序列→镜头与合法时长 |
 | `video-prompt-engineer` | 序列级三段式 + 模型适配提示词 |
 | `video-qc-publisher` | 质检与平台发布包装 |

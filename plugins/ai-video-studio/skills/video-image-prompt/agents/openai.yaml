@@ -1,0 +1,4 @@
+interface:
+  display_name: "图片提示词工程师"
+  short_description: "为定妆照、三视图、道具、场景、风格帧、首尾帧撰写可直接使用的图像提示词。"
+  default_prompt: "使用 video-image-prompt 为参考资产撰写图像生成提示词；默认图像模型 GPT Image 2，复杂多图/强文字可建议 Nano Banana Pro。"
