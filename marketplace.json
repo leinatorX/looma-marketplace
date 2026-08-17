@@ -1,13 +1,78 @@
 {
   "$schema": "./schemas/marketplace.schema.json",
   "version": 1,
-  "updatedAt": "2026-07-17",
+  "updatedAt": "2026-08-17",
   "plugins": [
+    {
+      "id": "emergency-studio",
+      "name": "应急科普内容工作室",
+      "description": "应急、消防、危化与安全生产领域的内容创作工作室：文章撰写与知识图谱出图两大技能，从选题、调研、成稿、出图到发布文案闭环。",
+      "version": "1.0.0",
+      "author": "leinatorX",
+      "category": "编辑",
+      "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/emergency-studio",
+      "manifest": "plugins/emergency-studio/.looma-plugin/plugin.json",
+      "files": [
+        ".looma-plugin/plugin.json",
+        "assets/icon.png",
+        "README.md",
+        "skills/article-writer/SKILL.md",
+        "skills/article-writer/agents/openai.yaml",
+        "skills/article-writer/references/human-writing.md",
+        "skills/article-writer/references/image-prompts.md",
+        "skills/article-writer/references/safety-rules.md",
+        "skills/article-writer/references/viral-logic.md",
+        "skills/knowledge-graph/SKILL.md",
+        "skills/knowledge-graph/agents/openai.yaml",
+        "skills/knowledge-graph/references/content-models.md",
+        "skills/knowledge-graph/references/prompt-review.md",
+        "skills/knowledge-graph/references/style-guide.md",
+        "skills/knowledge-graph/references/warmth-publishing.md",
+        "skills/knowledge-graph/references/workflow-and-rules.md"
+      ],
+      "source": {
+        "type": "github",
+        "repository": "leinatorX/looma-marketplace",
+        "ref": "main",
+        "path": "plugins/emergency-studio"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "NONE"
+      }
+    },
+    {
+      "id": "wechat-html-style",
+      "name": "公众号 HTML 排版",
+      "description": "将公众号文章整理成统一风格的本地 HTML 排版页，便于复制到微信公众平台编辑器；保持每期文章风格一致。",
+      "version": "1.0.0",
+      "author": "leinatorX",
+      "category": "编辑",
+      "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/wechat-html-style",
+      "manifest": "plugins/wechat-html-style/.looma-plugin/plugin.json",
+      "files": [
+        ".looma-plugin/plugin.json",
+        "assets/icon.png",
+        "README.md",
+        "skills/html-layout/SKILL.md",
+        "skills/html-layout/agents/openai.yaml"
+      ],
+      "source": {
+        "type": "github",
+        "repository": "leinatorX/looma-marketplace",
+        "ref": "main",
+        "path": "plugins/wechat-html-style"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "NONE"
+      }
+    },
     {
       "id": "ai-video-studio",
       "name": "AI 视频工作室",
       "description": "AI 短视频导演工作室：总导演、剧本策划、序列分镜、参考资产、多模型提示词、质检与平台发布。从一句话到可生成、可剪辑、可发布的完整方案。",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "author": "leinatorX",
       "category": "创作",
       "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/ai-video-studio",

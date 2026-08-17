@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../schemas/plugin.schema.json",
+  "schemaVersion": 1,
+  "name": "wechat-html-style",
+  "version": "1.0.0",
+  "description": "将公众号文章整理成统一风格的本地 HTML 排版页，便于复制到微信公众平台编辑器；保持每期文章风格一致。",
+  "author": {
+    "name": "leinatorX",
+    "url": "https://github.com/leinatorX"
+  },
+  "homepage": "https://github.com/leinatorX/looma-marketplace/tree/main/plugins/wechat-html-style",
+  "repository": "https://github.com/leinatorX/looma-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "wechat",
+    "html",
+    "layout",
+    "article",
+    "publishing",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "公众号 HTML 排版",
+    "shortDescription": "生成统一风格的公众号可复制 HTML 排版页。",
+    "category": "编辑",
+    "brandColor": "#B91C1C"
+  }
+}

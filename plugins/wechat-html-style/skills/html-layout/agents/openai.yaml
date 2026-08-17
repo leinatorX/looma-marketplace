@@ -1,0 +1,8 @@
+interface:
+  display_name: "公众号 HTML 排版"
+  short_description: "生成统一风格的公众号可复制 HTML"
+  brand_color: "#B91C1C"
+  default_prompt: "使用 html-layout 将这篇公众号文章排版成项目统一的 HTML 发布页。"
+
+policy:
+  allow_implicit_invocation: true
