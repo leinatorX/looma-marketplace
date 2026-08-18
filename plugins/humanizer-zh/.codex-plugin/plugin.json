@@ -1,0 +1,31 @@
+{
+  "name": "humanizer-zh",
+  "version": "1.0.0",
+  "description": "去除文本中的 AI 写作痕迹，让中文表达更自然、像人写的中文 Skill。识别并修复夸大象征意义、宣传性语言、AI 高频词、否定式排比、三段式法则、破折号过度使用等 24 类典型 AI 写作模式。",
+  "author": {
+    "name": "歸藏 (op7418)",
+    "url": "https://github.com/op7418/Humanizer-zh"
+  },
+  "homepage": "https://github.com/op7418/Humanizer-zh",
+  "repository": "https://github.com/op7418/Humanizer-zh",
+  "license": "MIT",
+  "keywords": [
+    "humanizer",
+    "humanizer-zh",
+    "ai-writing",
+    "anti-ai",
+    "editing",
+    "chinese",
+    "writing",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Humanizer-zh · 中文去 AI 味",
+    "shortDescription": "识别并改写 24 类 AI 写作痕迹，让中文更像人写的。",
+    "developerName": "歸藏 (op7418)",
+    "category": "Productivity",
+    "brandColor": "#10B981",
+    "composerIcon": "./assets/icon.png"
+  }
+}
