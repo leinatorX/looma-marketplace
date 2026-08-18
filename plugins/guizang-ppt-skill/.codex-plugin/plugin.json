@@ -1,0 +1,31 @@
+{
+  "name": "guizang-ppt-skill",
+  "version": "1.0.0",
+  "description": "归藏网页 PPT 技能：单文件 HTML 横向翻页演示文稿，含 WebGL 背景、演讲者视图、观众屏同步、备注与排练。支持「电子杂志 × 电子墨水」与「瑞士国际主义」两套视觉系统，以及多平台封面与配图生成。",
+  "author": {
+    "name": "歸藏 (op7418)",
+    "url": "https://github.com/op7418/guizang-ppt-skill"
+  },
+  "homepage": "https://github.com/op7418/guizang-ppt-skill",
+  "repository": "https://github.com/op7418/guizang-ppt-skill",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "ppt",
+    "deck",
+    "html-deck",
+    "magazine",
+    "swiss-style",
+    "presenter-mode",
+    "guizang",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "归藏 PPT · 网页 PPT / 配图 / 封面",
+    "shortDescription": "单文件 HTML 横向翻页 PPT，杂志风 / 瑞士风双系统，含演讲者模式。",
+    "developerName": "歸藏 (op7418)",
+    "category": "Creativity",
+    "brandColor": "#002FA7",
+    "composerIcon": "./assets/icon.png"
+  }
+}
