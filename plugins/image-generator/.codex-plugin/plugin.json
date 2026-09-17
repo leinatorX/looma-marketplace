@@ -1,7 +1,7 @@
 {
   "name": "image-generator",
-  "version": "1.1.1",
-  "description": "Looma 内置图片生成技能 ImageGenerator：通过 gpt-image-2 兼容接口文生图/图生图，并将结果主动发送到当前会话；适配慢上游长轮询。",
+  "version": "1.1.2",
+  "description": "Looma 内置图片生成技能 ImageGenerator：通过 gpt-image-2.5-sunburst 兼容接口文生图/图生图，并将结果主动发送到当前会话；适配慢上游长轮询。",
   "author": {
     "name": "leinatorX",
     "url": "https://github.com/leinatorX"
@@ -12,7 +12,7 @@
   "keywords": [
     "image",
     "generator",
-    "gpt-image-2",
+    "gpt-image-2.5-sunburst",
     "design",
     "looma"
   ],

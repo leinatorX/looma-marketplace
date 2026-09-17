@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Looma ImageGenerator：调用 gpt-image-2 兼容接口生成图片。
+"""Looma ImageGenerator：调用 gpt-image-2.5-sunburst 兼容接口生成图片。
 
 默认将图片缓存到 ~/.looma/temp/image-generator。
 脚本负责落盘与返回绝对路径；Agent 必须把图片主动发送到当前会话。
@@ -53,22 +53,12 @@ def default_output_dir():
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Looma ImageGenerator：调用 gpt-image-2 兼容接口生成图片，供会话回传"
+        description="Looma ImageGenerator：调用 gpt-image-2.5-sunburst 兼容接口生成图片，供会话回传"
     )
     parser.add_argument("--prompt", help="图片生成提示词")
     parser.add_argument("--size", default="1024x1024", help="图片尺寸，例如 1024x1024 或 auto")
     parser.add_argument("--quality", default="auto", choices=["low", "medium", "high", "auto"], help="图片质量")
-    parser.add_argument("--model", default="gpt-image-2", help="模型名称")
-    parser.add_argument(
-        "--t8-fallback-model",
-        default="gpt-image-2-all",
-        help="T8 主模型失败后的兜底模型，默认 gpt-image-2-all；设为 none 禁用",
-    )
-    parser.add_argument(
-        "--t8-fallback-size",
-        default="auto",
-        help="T8 兜底模型尺寸，默认 auto，按原始比例映射到 1K 档",
-    )
+    parser.add_argument("--model", default="gpt-image-2.5-sunburst", help="模型名称")
     parser.add_argument("--image", action="append", default=[], help="参考图 URL 或路径，可重复传入")
     parser.add_argument(
         "--response-format",
@@ -124,47 +114,6 @@ def validate_size(size):
         raise ValueError("size 长边与短边比例不能超过 3:1")
     if pixels < 655360 or pixels > 8294400:
         raise ValueError("size 总像素数必须在 655360 到 8294400 之间")
-
-
-def validate_t8_all_size(size):
-    if size == "auto":
-        return
-    try:
-        width, height = parse_size(size)
-    except ValueError:
-        raise ValueError("size 必须是 auto 或类似 1024x1024 的格式")
-    if width % 16 != 0 or height % 16 != 0:
-        raise ValueError("gpt-image-2-all 的 size 宽高都必须是 16 的倍数")
-    if max(width, height) > 1024:
-        raise ValueError("gpt-image-2-all 只支持 1K 档尺寸，最大边不能超过 1024")
-    if max(width, height) / min(width, height) > 3:
-        raise ValueError("gpt-image-2-all 的 size 长边与短边比例不能超过 3:1")
-
-
-def parse_size(size):
-    width_text, height_text = size.lower().split("x", 1)
-    return int(width_text), int(height_text)
-
-
-def t8_fallback_size(source_size, fallback_size):
-    if fallback_size != "auto":
-        return fallback_size
-    if source_size == "auto":
-        return "1024x1024"
-
-    width, height = parse_size(source_size)
-    ratio = width / height
-
-    candidates = [
-        ("1024x1024", 1 / 1),
-        ("1024x576", 16 / 9),
-        ("576x1024", 9 / 16),
-        ("1024x768", 4 / 3),
-        ("768x1024", 3 / 4),
-        ("1024x688", 3 / 2),
-        ("688x1024", 2 / 3),
-    ]
-    return min(candidates, key=lambda item: abs(item[1] - ratio))[0]
 
 
 def build_generation_url(base_url, async_mode=False, webhook=None):
@@ -461,16 +410,15 @@ def build_payload(args, model=None, size=None):
     return payload
 
 
-def run_t8(args, output_dir, timestamp, model=None, size=None, label=""):
+def run_t8(args, output_dir, timestamp):
     task_id = args.task_id
     task_submit_path = None
-    effective_model = model or args.model
-    effective_size = size or args.size
-    suffix = f"-{label}" if label else ""
+    effective_model = args.model
+    effective_size = args.size
 
     if args.task_id:
         response_json = query_task(args.base_url, args.api_key, args.task_id, args.timeout)
-        response_path = write_json(output_dir, f"task-{args.task_id}{suffix}-{timestamp}.json", response_json)
+        response_path = write_json(output_dir, f"task-{args.task_id}-{timestamp}.json", response_json)
     elif args.sync:
         response_json = post_json(
             build_generation_url(args.base_url),
@@ -478,7 +426,7 @@ def run_t8(args, output_dir, timestamp, model=None, size=None, label=""):
             build_payload(args, model=effective_model, size=effective_size),
             args.timeout,
         )
-        response_path = write_json(output_dir, f"response{suffix}-{timestamp}.json", response_json)
+        response_path = write_json(output_dir, f"response-{timestamp}.json", response_json)
     else:
         submit_response = post_json(
             build_generation_url(args.base_url, async_mode=True, webhook=args.webhook),
@@ -486,7 +434,7 @@ def run_t8(args, output_dir, timestamp, model=None, size=None, label=""):
             build_payload(args, model=effective_model, size=effective_size),
             args.timeout,
         )
-        task_submit_path = write_json(output_dir, f"task-submit{suffix}-{timestamp}.json", submit_response)
+        task_submit_path = write_json(output_dir, f"task-submit-{timestamp}.json", submit_response)
         task_id = extract_task_id(submit_response)
         if not task_id:
             raise RuntimeError(f"异步提交未返回 task_id: {json.dumps(submit_response, ensure_ascii=False)}")
@@ -512,7 +460,7 @@ def run_t8(args, output_dir, timestamp, model=None, size=None, label=""):
             args.poll_interval,
             fail_on_task_failure=args.fail_on_task_failure,
         )
-        response_path = write_json(output_dir, f"task-{task_id}{suffix}-{timestamp}.json", response_json)
+        response_path = write_json(output_dir, f"task-{task_id}-{timestamp}.json", response_json)
 
     image_response = extract_image_response_from_task(response_json) if (args.task_id or not args.sync) else response_json
     image_paths, image_urls, download_errors = save_images(image_response, output_dir, args.timeout, task_id or timestamp)
@@ -540,66 +488,20 @@ def run_t8(args, output_dir, timestamp, model=None, size=None, label=""):
     return with_session_delivery(result)
 
 
-def should_fallback_to_t8_model(args, result):
-    return (
-        args.t8_fallback_model
-        and args.t8_fallback_model != "none"
-        and args.model != args.t8_fallback_model
-        and result.get("task_status") == "FAILURE"
-    )
-
-
 def main():
     args = parse_args()
     if args.poll_interval <= 0:
         raise ValueError("--poll-interval 必须大于 0")
     if args.timeout <= 0:
         raise ValueError("--timeout 必须大于 0")
-    if args.t8_fallback_model != "none" and args.t8_fallback_size != "auto":
-        validate_t8_all_size(args.t8_fallback_size)
     if not args.task_id:
-        if args.model == "gpt-image-2-all":
-            validate_t8_all_size(args.size)
-        else:
-            validate_size(args.size)
+        validate_size(args.size)
 
     output_dir = Path(args.output_dir).expanduser()
     output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-    try:
-        result = run_t8(args, output_dir, timestamp)
-    except Exception as exc:
-        if args.t8_fallback_model != "none" and not args.task_id:
-            try:
-                result = run_t8(
-                    args,
-                    output_dir,
-                    timestamp,
-                    model=args.t8_fallback_model,
-                    size=t8_fallback_size(args.size, args.t8_fallback_size),
-                    label="fallback",
-                )
-                result["fallback_from"] = f"t8_error: {exc}"
-                print(json.dumps(with_session_delivery(result), ensure_ascii=False, indent=2))
-                return
-            except Exception:
-                raise
-        raise
-
-    if not args.task_id and not args.sync and should_fallback_to_t8_model(args, result):
-        fallback_result = run_t8(
-            args,
-            output_dir,
-            timestamp,
-            model=args.t8_fallback_model,
-            size=t8_fallback_size(args.size, args.t8_fallback_size),
-            label="fallback",
-        )
-        fallback_result["fallback_from"] = f"t8_failure: {result.get('task_error')}"
-        print(json.dumps(with_session_delivery(fallback_result), ensure_ascii=False, indent=2))
-        return
-
+    result = run_t8(args, output_dir, timestamp)
     print(json.dumps(with_session_delivery(result), ensure_ascii=False, indent=2))
 
 

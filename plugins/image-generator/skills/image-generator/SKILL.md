@@ -1,13 +1,13 @@
 ---
 name: image-generator
-description: Looma 图片生成技能 ImageGenerator。当用户要求生成、绘制、出图、改图、重绘、图生图、局部编辑、下载或保存图片，或提到 ImageGenerator、图片生成、AI出图、生图、海报、封面、公众号配图、小红书封面、视频号封面、抖音封面、知识图谱、信息图、gpt-image-2、DALL·E 风格 /v1/images/generations 请求时使用。生成成功后必须把图片主动发送到当前会话，而不是只报告本地路径。上游可能排队数分钟，须耐心用同一 task_id 间隔轮询，禁止因慢而重提。
+description: Looma 图片生成技能 ImageGenerator。当用户要求生成、绘制、出图、改图、重绘、图生图、局部编辑、下载或保存图片，或提到 ImageGenerator、图片生成、AI出图、生图、海报、封面、公众号配图、小红书封面、视频号封面、抖音封面、知识图谱、信息图、gpt-image-2.5-sunburst、DALL·E 风格 /v1/images/generations 请求时使用。生成成功后必须把图片主动发送到当前会话，而不是只报告本地路径。上游可能排队数分钟，须耐心用同一 task_id 间隔轮询，禁止因慢而重提。
 ---
 
 # ImageGenerator
 
 ## 目标
 
-使用 `gpt-image-2` 兼容异步接口为 **Looma** 生成图片，并把结果 **主动发送到当前会话**，让用户在对话界面直接看到图片。
+使用 `gpt-image-2.5-sunburst` 兼容异步接口为 **Looma** 生成图片，并把结果 **主动发送到当前会话**，让用户在对话界面直接看到图片。
 
 本技能的交付目标是会话可见，而不是仅落盘：
 
@@ -134,13 +134,11 @@ python scripts/generate_image.py \
 
 ## 参数选择
 
-- 默认先走 `/v1/images/generations?async=true`；T8 失败时只允许同通道模型兜底。
-- `model` 默认 `gpt-image-2`。
-- `t8-fallback-model` 默认 `gpt-image-2-all`（仅 1K 档）。`--t8-fallback-size auto` 会按原始比例映射到 1K。
+- 默认使用 `/v1/images/generations?async=true`，模型为 `gpt-image-2.5-sunburst`。
 - 默认异步模式：提交后用 `GET /v1/images/tasks/{task_id}` 查询。
 - `--no-wait` 只提交并返回 `task_id`，适合 Looma 脚本超时边界。
 - `--task-id` 查询已有任务，不重新提交。
-- `--sync` 使用旧同步接口，仅作兼容兜底。
+- `--sync` 使用旧同步接口，仅作兼容用途。
 - 服务端 `FAILURE` 时默认输出失败 JSON 并以 0 退出，避免宿主误判为需要重提；只有明确需要失败语义时才加 `--fail-on-task-failure`。
 - `quality` 默认 `auto`；要更快用 `low`，要成品用 `high`。
 - `response_format` 默认 `b64_json`；异步结果可能只返回 `url`，脚本会兼容下载。
