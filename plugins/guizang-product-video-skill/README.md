@@ -25,6 +25,7 @@
 plugins/guizang-product-video-skill/
 ├── .codex-plugin/plugin.json
 ├── README.md                      # 本文件
+├── assets/icon.png                # 市场图标（96x96）
 └── skills/guizang-product-video-skill/
     ├── SKILL.md                   # 主流程与硬约束
     ├── README.md                  # 原作者上游文档
@@ -69,5 +70,5 @@ plugins/guizang-product-video-skill/
 
 ## 已知差异
 
-- 本条目暂未配置 `composerIcon`：上游未提供可复用的插件图标，而 `assets/readme/` 与 `assets/fallback/` 下的图片分别属于上游文档配图与 CodePilot 品牌素材，不宜充作市场图标。
 - 上游根目录的 `agents/openai.yaml` 是 Claude Code 的界面定义，Codex 侧改用 `.codex-plugin/plugin.json` 的 `interface` 字段，故未收录。
+- `assets/icon.png` 是本市场自建的图标（非上游资产），沿用作者品牌色 `#002FA7` 与歸藏系列插件的视觉语言：白色 16:9 画面、播放三角、黄色播放进度，与 `guizang-ppt-skill` 图标同源。上游未提供可复用的插件图标，故未直接复用 `assets/readme/` 或 CodePilot 品牌素材。

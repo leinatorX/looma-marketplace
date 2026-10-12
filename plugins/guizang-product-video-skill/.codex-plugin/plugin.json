@@ -27,6 +27,7 @@
     "shortDescription": "复用真实产品组件，用代码制作有配乐、有节奏、讲得清楚的软件更新宣传片。",
     "developerName": "歸藏 (op7418)",
     "category": "Creativity",
-    "brandColor": "#002FA7"
+    "brandColor": "#002FA7",
+    "composerIcon": "./assets/icon.png"
   }
 }
