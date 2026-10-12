@@ -87,6 +87,18 @@
         "authentication": "ON_USE"
       },
       "category": "Creativity"
+    },
+    {
+      "name": "guizang-product-video-skill",
+      "source": {
+        "source": "local",
+        "path": "./plugins/guizang-product-video-skill"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Creativity"
     }
   ]
 }

@@ -1,0 +1,32 @@
+{
+  "name": "guizang-product-video-skill",
+  "version": "1.0.0",
+  "description": "归藏产品宣传片技能：用代码制作软件产品宣传片与版本更新片（release notes video、changelog promo）。复用真实业务组件与产品设计语言，配合 GSAP/Three.js 动效、原创配乐和动作音效完成影片，每支片子的视觉手法都从产品本身推导，不套模板。",
+  "author": {
+    "name": "歸藏 (op7418)",
+    "url": "https://github.com/op7418/guizang-product-video-skill"
+  },
+  "homepage": "https://github.com/op7418/guizang-product-video-skill",
+  "repository": "https://github.com/op7418/guizang-product-video-skill",
+  "license": "AGPL-3.0; assets/fallback: BUSL-1.1",
+  "keywords": [
+    "product-video",
+    "release-notes",
+    "changelog",
+    "promo-video",
+    "motion-design",
+    "gsap",
+    "threejs",
+    "video",
+    "guizang",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "归藏 Product Video · 产品宣传片",
+    "shortDescription": "复用真实产品组件，用代码制作有配乐、有节奏、讲得清楚的软件更新宣传片。",
+    "developerName": "歸藏 (op7418)",
+    "category": "Creativity",
+    "brandColor": "#002FA7"
+  }
+}
