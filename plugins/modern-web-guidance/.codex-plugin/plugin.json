@@ -1,0 +1,36 @@
+{
+  "name": "modern-web-guidance",
+  "version": "1.0.0",
+  "description": "由 Google Chrome、Microsoft Edge、Mozilla Firefox 与 MDN 团队联合维护的现代 Web 开发智能体技能包：覆盖 250 项现代 Web 特性、203 个前端实战指南以及 Chrome Manifest V3 扩展开发规范，引导 AI 优先采用现代原生 HTML/CSS/JS API 与轻量化兼容回退方案。",
+  "author": {
+    "name": "Google Chrome",
+    "url": "https://developer.chrome.com"
+  },
+  "homepage": "https://developer.chrome.com/docs/modern-web-guidance",
+  "repository": "https://github.com/GoogleChrome/modern-web-guidance",
+  "license": "Apache-2.0",
+  "keywords": [
+    "web",
+    "html",
+    "css",
+    "javascript",
+    "chrome-extensions",
+    "best-practices",
+    "baseline",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Modern Web Guidance · 现代 Web 开发指南",
+    "shortDescription": "Google Chrome 官方维护的现代 Web 最佳实践与 Chrome 扩展技能包。",
+    "developerName": "Google Chrome",
+    "category": "Developer Tools",
+    "brandColor": "#4285F4",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png",
+    "websiteURL": "https://developer.chrome.com/docs/modern-web-guidance",
+    "supportURL": "https://github.com/GoogleChrome/modern-web-guidance-src/issues",
+    "privacyPolicyURL": "https://policies.google.com/privacy",
+    "termsOfServiceURL": "https://policies.google.com/terms"
+  }
+}
