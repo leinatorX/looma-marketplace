@@ -5,9 +5,9 @@
 > 本插件收录自 Google Chrome 团队联合 Microsoft Edge、Mozilla Firefox、MDN 团队及 Web 社区维护的开源项目：
 > <https://github.com/GoogleChrome/modern-web-guidance>（源码仓库：<https://github.com/GoogleChrome/modern-web-guidance-src>）
 >
-> 上游版本 `1.0.0`，对应提交 `4dd968349e54ca45a05dd5c818fb035c9054b022`。
+> 上游版本 `1.0.1`，对应提交 `64a6d708f5a43f2cd3fde5d4d7db3905ba1bdf65`。
 >
-> 本市场条目仅做 Codex / Looma 清单格式对齐、Skill frontmatter 单行化适配与离线 `guides/` 兜底说明；2 个 Skill 的正文、203 篇指南及 Chrome 扩展参考资料均完整保留上游内容。
+> 本市场条目仅做 Codex / Looma 清单格式对齐、Skill frontmatter 单行化适配与离线 `guides/` 兜底说明；2 个 Skill 的正文、204 篇指南及 Chrome 扩展参考资料均完整保留上游内容。
 
 ## 能力范围
 
@@ -15,13 +15,13 @@
 
 | 目录 | 加载后 Skill ID | 职责 |
 | --- | --- | --- |
-| `modern-web-guidance` | `plugin:modern-web-guidance:modern-web-guidance` | 覆盖 250 项现代 Web 特性（CSS 布局、视图过渡、Popover/Dialog、表单与自动填充、INP 性能优化、无障碍、WebAuthn、Sanitizer、端侧内置 AI、WebMCP 等）及 203 个真实开发场景指南 |
+| `modern-web-guidance` | `plugin:modern-web-guidance:modern-web-guidance` | 覆盖 262 项现代 Web 特性（CSS 布局、视图过渡、Popover/Dialog、表单与自动填充、INP 性能优化、无障碍、WebAuthn、Sanitizer、端侧内置 AI、WebMCP 等）及 204 个真实开发场景指南 |
 | `chrome-extensions` | `plugin:modern-web-guidance:chrome-extensions` | 基于 Manifest V3 构建与发布 Chrome 浏览器扩展，附带 23 份扩展 API 与 Chrome Web Store 审核/上架参考文档 |
 
 ## 运行要求与离线兜底
 
 - **CLI 检索模式（推荐）**：`modern-web-guidance` 默认通过 `npx -y modern-web-guidance@latest search/retrieve/legacy-scan` 执行本地语义检索与 BM25 匹配，需要本机安装 **Node.js >= 22.0.0**，且首次执行需联网拉取 npm 包。
-- **离线 / 无 Node 22 兜底**：本插件已在 `skills/modern-web-guidance/guides/` 中内置全部 203 篇 Markdown 指南；当环境离线、受限或缺少 Node.js 22+ 时，Agent 可直接搜索并读取本地 `guides/<category>/<id>.md` 文件获取同样完整的规范与代码示例。
+- **离线 / 无 Node 22 兜底**：本插件已在 `skills/modern-web-guidance/guides/` 中内置全部 204 篇 Markdown 指南；当环境离线、受限或缺少 Node.js 22+ 时，Agent 可直接搜索并读取本地 `guides/<category>/<id>.md` 文件获取同样完整的规范与代码示例。
 
 ## Looma 适配说明
 

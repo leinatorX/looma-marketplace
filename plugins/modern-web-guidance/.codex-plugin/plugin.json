@@ -1,7 +1,7 @@
 {
   "name": "modern-web-guidance",
-  "version": "1.0.0",
-  "description": "由 Google Chrome、Microsoft Edge、Mozilla Firefox 与 MDN 团队联合维护的现代 Web 开发智能体技能包：覆盖 250 项现代 Web 特性、203 个前端实战指南以及 Chrome Manifest V3 扩展开发规范，引导 AI 优先采用现代原生 HTML/CSS/JS API 与轻量化兼容回退方案。",
+  "version": "1.0.1",
+  "description": "由 Google Chrome、Microsoft Edge、Mozilla Firefox 与 MDN 团队联合维护的现代 Web 开发智能体技能包：覆盖 262 项现代 Web 特性、204 个前端实战指南以及 Chrome Manifest V3 扩展开发规范，引导 AI 优先采用现代原生 HTML/CSS/JS API 与轻量化兼容回退方案。",
   "author": {
     "name": "Google Chrome",
     "url": "https://developer.chrome.com"
