@@ -6,8 +6,7 @@ Frames: 1 rest | 10 arms raised | 20 elbows 130 + arms forward | 30 hip flex + k
         | 40 crouch | 50 spine twist + head turn.
 Usage:
   blender -b f.blend -P stress_poses.py -- --armature RIG [--save out.blend]
-  then: Looma use render_viewport_to_path / get_screenshot_of_area_as_image, or render the
-  frames; remove with --clear.
+  then: MCP look(mode="frames", frames=[1,10,20,30,40,50]) or render the frames; remove with --clear.
   MCP: import stress_poses; print(stress_poses.run(armature="RIG"))
 """
 import math

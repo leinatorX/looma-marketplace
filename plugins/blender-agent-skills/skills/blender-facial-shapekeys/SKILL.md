@@ -1,11 +1,11 @@
 ---
 name: blender-facial-shapekeys
-description: Facial rigs and shape keys in Blender 5.2 - ARKit 52 blendshapes, visemes for lip-sync, sculpting expressions, splitting symmetric shapes into Left/Right, mirroring, corrective and combination shapes, drivers and control rigs, bone+blendshape hybrids, export to engines (Unity, Unreal, Roblox dynamic heads, VRM/web). Use for faces, expressions, lip-sync, or any shape-key work.
+description: Facial rigs and shape keys in Blender 5.3 - ARKit 52 blendshapes, visemes for lip-sync, sculpting expressions, splitting symmetric shapes into Left/Right, mirroring, corrective and combination shapes, drivers and control rigs, bone+blendshape hybrids, export to engines (Unity, Unreal, Roblox dynamic heads, VRM/web). Use for faces, expressions, lip-sync, or any shape-key work.
 ---
 
 # Facial Rig & Shape Keys
 
-> **Looma 适配**：要求 Blender 5.2 LTS+。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
+> **Looma 适配**：要求 Blender 5.2 LTS+（5.3 已验证）。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
 
 The execution model is in `blender-core`. The body rig is in `blender-character-rigging`.
 

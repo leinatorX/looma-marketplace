@@ -1,11 +1,11 @@
 ---
 name: blender-animation
-description: Animation in Blender 5.2 - slotted/layered actions and the channelbag API, Python keyframing, F-curves, game loops, NLA clips, pose library, mocap/BVH retargeting via constraints, baking control rigs to export skeletons, root motion, per-clip export. Use for any keyframe, action, NLA, mocap, or animation-export task.
+description: Animation in Blender 5.3 - slotted/layered actions and the channelbag API, Python keyframing, F-curves, game loops with pop/hitch checks, NLA clips, pose library, mocap/BVH/Mixamo retargeting with auto bone maps, baking control rigs to export skeletons, root motion, per-clip export. Use for any keyframe, action, NLA, mocap, or animation-export task.
 ---
 
 # Animation
 
-> **Looma 适配**：要求 Blender 5.2 LTS+。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
+> **Looma 适配**：要求 Blender 5.2 LTS+（5.3 已验证）。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
 
 The execution model is in `blender-core` (its `references/bpy-patterns.md` has verified keyframe/driver snippets). Rigs are in `blender-character-rigging`.
 
@@ -24,7 +24,7 @@ The execution model is in `blender-core` (its `references/bpy-patterns.md` has v
 
 ## Game animation rules
 - **One action per clip**, named `<Rig>_<Clip>` or just `<Clip>`, with a fake user so it survives saving.
-- **Loops**: first and last frames identical. Export frames 1..N and let the engine drop the duplicate, or exclude the last frame (UE/Unity "loop pose" options). An F-curve `CYCLES` modifier helps preview but **doesn't export**, so bake it.
+- **Loops**: first and last frames identical. Export frames 1..N and let the engine drop the duplicate, or exclude the last frame (UE/Unity "loop pose" options). An F-curve `CYCLES` modifier helps preview but **doesn't export**, so bake it. Verify with `scripts/loop_check.py -- --object RIG --action Walk [--root-motion root] [--fix]`: it reports pose **pops** (last ≠ first, per bone, in deg/m) and speed **hitches** across the seam, and `--fix` keys the first-frame values on the last frame (root travel is kept).
 - **FPS**: author at 30 (or 24) and let engines resample. Set `scene.render.fps` before importing mocap.
 - **Root motion**: the root bone carries the translation (and yaw). The hips keep the bob/sway. `scripts/bake_action.py --root-motion xy` moves the hips' ground motion to the root. In-place clips: the root stays at the origin.
 - **Additive/overlay** clips (aim offsets, breathing) are exported as normal clips and marked additive in the engine.
@@ -39,7 +39,9 @@ This gives one baked action per clip (`GAME_RIG_Body|Walk`), cleaned, with fake 
 
 ## Mocap and retargeting
 - Import: `bpy.ops.import_anim.bvh(filepath=..., global_scale=0.01 if cm else 1, rotate_mode="NATIVE", update_scene_fps=True)`, `import_scene.fbx` (Mixamo, `automatic_bone_orientation=True`).
-- Retarget without add-ons: put the target rig in the **same rest pose** (T vs A matters most), add `COPY_ROTATION` constraints (world or local-with-parent space) from each target bone to the matching source bone, plus `COPY_LOCATION` on the hips/root (scaled by the leg-length ratio). Then self-bake with `bake_action.py --source TARGET --target TARGET`, and delete the constraints.
+- Retarget: `scripts/retarget.py -- --source Mocap --target GAME_RIG [--map auto|map.json] [--in-place] [--name Walk]`. Each target bone gets the source bone's **world rotation change from rest** on its own rest orientation, so rolls, bone axes, Y-up/cm FBX object transforms and proportions don't matter. The hips travel is scaled by the hips-height ratio. Keys go straight into a new `TARGET|Name` action (quaternion, linear, fake user). Measured on a Mixamo-style rig (Y-up, 0.01 scale, rolled) → Rigify-named rig with 15% longer legs: 17 bones, < 0.1° error.
+- The auto map understands Mixamo (`mixamorig:LeftUpLeg`), Rigify `DEF-`/`ORG-`, UE/Unity/BVH-style names, and spine chains of different lengths. Check it first with `--show-map` (`unmapped_key_parts` must be empty), and pass a JSON `{target: source}` for anything custom (fingers, props).
+- **Rest poses must match** (T vs A matters most): pose the target's rest like the source's first. Then clean, add root motion, and export with `bake_action.py`.
 - Clean mocap: decimate keys (`graph.decimate`, ratio 0.3–0.5), use an F-curve `SMOOTH` modifier or the Butterworth filter (`graph.butterworth_smooth`), and fix foot sliding with IK pins and then bake.
 - Production retarget tools: Auto-Rig Pro (paid), Rokoko (free), and the engine-side retargeters (UE IK Retargeter, Unity Humanoid).
 
@@ -54,5 +56,5 @@ Any property can be keyed: `kb.keyframe_insert("value", frame=f)` (shape key), `
 - `pb.matrix = ...` followed by `keyframe_insert` needs the right `scene.frame_set(f)` **first**, or an evaluation overwrites the pose.
 - Connected bones (`use_connect`) can't translate. Hips/pelvis must be unconnected from the root.
 - `bake_action` with visual keying reads **evaluated** poses, so constraints, IK and drivers are all captured. Mute the target's own constraints afterward (the script does), or they keep overriding the keys.
-- Quaternion vs Euler: game bones should use `QUATERNION` (no gimbal lock, smooth slerp). Euler is fine for single-axis controls. Don't mix modes between keys.
+- Quaternion vs Euler: game bones should use `QUATERNION` (no gimbal lock, smooth slerp). Euler is fine for single-axis controls. Don't mix modes between keys. 5.3 converts existing animation: `pose_bone.convert_rotation_mode("QUATERNION", bake=False)` (also on objects) or `anim.rotation_mode_convert(mode=...)` for the selection.
 - glTF sampling: `export_force_sampling` bakes every frame (the safe default). Non-linear F-curve modifiers and drivers only export when sampled.

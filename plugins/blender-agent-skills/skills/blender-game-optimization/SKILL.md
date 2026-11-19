@@ -5,7 +5,7 @@ description: Optimize Blender assets for real-time engines - triangle/material/t
 
 # Game Optimization
 
-> **Looma 适配**：要求 Blender 5.2 LTS+。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
+> **Looma 适配**：要求 Blender 5.2 LTS+（5.3 已验证）。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
 
 The execution model is in `blender-core`. Always re-run `blender-asset-qa` after optimizing.
 

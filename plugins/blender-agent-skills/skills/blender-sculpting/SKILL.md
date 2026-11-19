@@ -1,11 +1,11 @@
 ---
 name: blender-sculpting
-description: Sculpting in Blender 5.2 - base-to-detail workflow, voxel remesh, dyntopo, multires, 5.x brush types, masks/face sets, symmetry, plus headless-safe procedural ops for agents (remesh, symmetrize, multires, inflate, noise detail, smooth) and the sculpt-to-game handoff. Use for organic models, characters, creatures, rocks and bake sources.
+description: Sculpting in Blender 5.3 - base-to-detail workflow, voxel remesh, dyntopo, multires, 5.x brush types, masks/face sets, symmetry, plus headless-safe procedural ops for agents (remesh, symmetrize, multires, inflate, noise detail, smooth) and the sculpt-to-game handoff. Use for organic models, characters, creatures, rocks and bake sources.
 ---
 
 # Sculpting
 
-> **Looma 适配**：要求 Blender 5.2 LTS+。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
+> **Looma 适配**：要求 Blender 5.2 LTS+（5.3 已验证）。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代。
 
 The execution model is in `blender-core`. The handoff goes to `blender-retopology-uv` → `blender-texture-baking`.
 
@@ -41,6 +41,9 @@ The execution model is in `blender-core`. The handoff goes to `blender-retopolog
 - Silhouette first. Check from several angles in flat matcap (`look` shading `solid`) before adding detail.
 - Floaters/kitbash for hard-surface details on organic models: separate objects, combined at bake time.
 - Before baking, run `blender-asset-qa` on the high (no inverted parts, no huge self-intersections in the bake range).
+
+## References
+[references/forms-and-bake-sources.md](references/forms-and-bake-sources.md): human proportions in meters and heads, form order (primary → tertiary), hard-surface sculpting (trim gestures, mask extract, face sets, mesh filters), multires rebuild/reshape, and preparing a high-poly bake source (density, cage, naming, exploding). Load it before character, creature or bake-source work.
 
 ## Gotchas
 - `voxel_remesh` destroys UVs, vertex groups (unless preserve attributes) and multires levels. Do it before UVs/rigging.

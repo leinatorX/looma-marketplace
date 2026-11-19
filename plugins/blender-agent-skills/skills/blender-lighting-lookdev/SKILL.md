@@ -1,11 +1,11 @@
 ---
 name: blender-lighting-lookdev
-description: Lighting, cameras and look-dev in Blender 5.2 - studio 3-point and product lighting, HDRI environments, sun/sky exteriors, interiors, light linking, physically based light units, camera focal lengths/composition/DOF, cyclorama backdrops, looping turntables for asset presentation. Use when presenting assets, setting up scenes for rendering, or judging materials under consistent light.
+description: Lighting, cameras and look-dev in Blender 5.3 - studio 3-point and product lighting, HDRI environments, sun/sky exteriors, interiors, light linking, physically based light units, camera focal lengths/composition/DOF, cyclorama backdrops, looping turntables for asset presentation. Use when presenting assets, setting up scenes for rendering, or judging materials under consistent light.
 ---
 
 # Lighting & Look-dev
 
-> 本市场版本要求 Blender 5.2 LTS+。上游提到的 `search_assets` / `import_asset` 在当前 MCP 中不存在时，改用本地 HDRI 文件。
+> 本市场版本要求 Blender 5.2 LTS+（5.3 已验证）。上游提到的 `search_assets` / `import_asset` 在当前 MCP 中不存在时，改用本地 HDRI 文件。
 
 The execution model is in `blender-core`. Render settings are in `blender-rendering`. Full time-of-day, night and fog environments are in `blender-time-of-day`.
 
@@ -21,11 +21,11 @@ This builds a camera framed to the bounding sphere (on the narrower frame axis),
 |---|---|
 | Asset / product review | 3-point: key 45° side, 30–40° up; fill opposite at ⅓ power and lower; rim behind for silhouette. Large soft area lights (size ≈ object), neutral grey backdrop, Khronos PBR Neutral view |
 | Reflective product (metal, glass, car paint) | large softboxes/strip lights *reflected* in the surface, plus a black/white gradient environment. Shape the reflections, not the illumination |
-| Exterior day | Sun light (angle 0.5° for sharp, 2–5° for softer) + sky (`ShaderNodeTexSky`, `sky_type` `MULTIPLE_SCATTERING`/`SINGLE_SCATTERING`; 5.x replaced "Nishita"; `PREETHAM`/`HOSEK_WILKIE` legacy) with `sun_elevation`/`sun_rotation` matching the Sun light, or an HDRI of the matching time of day |
+| Exterior day | Sun light (angle 0.5° for sharp, 2–5° for softer) + sky (`ShaderNodeTexSky`, `sky_type` `MULTIPLE_SCATTERING`/`SINGLE_SCATTERING`; 5.x replaced "Nishita"; `PREETHAM`/`HOSEK_WILKIE` legacy) with `sun_elevation`/`sun_rotation` matching the Sun light (5.3: `sun_disc` now emits light, so turn it off when a Sun lamp is the sun), or an HDRI of the matching time of day |
 | Interior | HDRI/sky through the windows + portal area lights in the openings, bounces ≥ 4, then practical lights (lamps) at real wattage |
 | Character / portrait | soft key from above-front, a reflector-like fill, rim or hair light, an eye catchlight. 85–135 mm lens |
 | Stylized / game screenshot | match the engine: one directional + ambient/HDRI, no fancy GI, so it looks like it will in-game |
-- **HDRI**: Poly Haven (CC0). 如果当前 MCP 没有 `search_assets`/`import_asset`，使用用户提供的本地 HDRI 文件，通过 `ShaderNodeTexEnvironment` + Mapping 接入（Z rotation aligns the sun）。Strength 0.5–1.5. Clamp sun hotspots if they cause fireflies.
+- **HDRI**: Poly Haven (CC0) via the blender-mcp `search_assets`/`import_asset`, or `ShaderNodeTexEnvironment` + Mapping (Z rotation aligns the sun). Strength 0.5–1.5. Clamp sun hotspots if they cause fireflies.
 - **Light linking** (4.0+, Cycles + EEVEE): set `light_obj.light_linking.receiver_collection` / `blocker_collection` (on the light **object**) to light only what you choose, like a hero rim that doesn't touch the backdrop. Portals: `light.cycles.is_portal = True` on area lights in window openings.
 - **Units**: point/spot/area in Watts (a 60 W bulb ≈ point light 40–60 W in Blender), sun in W/m² (irradiance; 1000 ≈ physical midday, but use 3–10 with AgX for natural results), emission strength ≈ W/m². Keep lights physically plausible and control the overall image with exposure.
 - **Shadows**: light size controls softness. A bigger, closer light is softer. Contact shadows should exist where objects touch, so check that nothing floats (`blender-asset-qa` `ground_z`).

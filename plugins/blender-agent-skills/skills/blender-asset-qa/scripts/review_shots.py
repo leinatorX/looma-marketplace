@@ -5,8 +5,7 @@ parts), wire (black wireframe over solid -> topology), material (texture/materia
 Usage:
   blender -b f.blend -P review_shots.py -- [--objects A B] [--out //review.png]
       [--views front right back left top three_quarter] [--mode solid|random|wire|material] [--res 512]
-  MCP: use render_viewport_to_path / get_screenshot_of_area_as_image when available;
-  this script is for agents without live viewport access.
+  MCP: prefer the `look` tool; this script is for agents without live viewport access.
 Returns {"sheet": path, "views": [paths]} - open the PNG with your image reader.
 """
 import math
@@ -106,9 +105,11 @@ def run(objects=None, out="", views=None, mode="solid", res=512, **_):
             im.pixels.foreach_get(a)
             imgs.append(a.reshape(res, res, 4))
             bpy.data.images.remove(im)
-        cols = 2 if len(imgs) <= 4 else 3
-        rows = math.ceil(len(imgs) / cols)
-        sheet = np.ones((rows * res, cols * res, 4), dtype=np.float32)
+        n = len(imgs)
+        cols = n if n <= 3 else 2 if n == 4 else 3  # 1-3 views in one row: no empty cells
+        rows = math.ceil(n / cols)
+        sheet = np.empty((rows * res, cols * res, 4), dtype=np.float32)
+        sheet[:] = imgs[0][0, 0]  # unused cells take the render background, not white
         for i, a in enumerate(imgs):
             rr, cc = rows - 1 - i // cols, i % cols  # pixel rows are bottom-up
             sheet[rr * res:(rr + 1) * res, cc * res:(cc + 1) * res] = a

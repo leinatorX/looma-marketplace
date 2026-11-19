@@ -1,7 +1,7 @@
 {
   "name": "blender-agent-skills",
-  "version": "1.1.0",
-  "description": "专业 Blender 5.2 智能体技能包：22 个 Skill 覆盖建模、雕刻、重拓扑/UV、PBR 材质、贴图烘焙、绑定、动画、性能优化、导出、渲染、昼夜天气、仿真与资产质检。",
+  "version": "1.3.2",
+  "description": "专业 Blender 5.2/5.3 智能体技能包：28 个 Skill 覆盖建模、雕刻、重拓扑/UV、PBR、贴图、烘焙、绑定、动画、服装、毛发、环境、NPR、性能优化、导出、渲染、视频、昼夜天气、仿真与资产质检。",
   "author": {
     "name": "EL4CTEO",
     "url": "https://github.com/EL4CTEO"
@@ -25,7 +25,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Blender 智能体技能包",
-    "shortDescription": "22 个 Blender 5.2 技能，覆盖建模到导出与质检。",
+    "shortDescription": "28 个 Blender 5.2/5.3 技能，覆盖建模到导出与质检。",
     "developerName": "EL4CTEO",
     "category": "Creativity",
     "brandColor": "#EA7600",

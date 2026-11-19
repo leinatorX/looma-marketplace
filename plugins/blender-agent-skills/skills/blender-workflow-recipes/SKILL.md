@@ -1,11 +1,11 @@
 ---
 name: blender-workflow-recipes
-description: End-to-end Blender 5.2 playbooks chaining the blender-* skills with QA gates - game props (mid-poly, high-to-low), game characters (sculpt/AI mesh to rigged, animated export), Roblox props/accessories/avatars, AI or downloaded asset cleanup, procedural environments, web/AR assets, product turntables, mood/weather shots (night, rain, snow, fog). Use for complete multi-stage asset requests.
+description: End-to-end Blender 5.3 playbooks chaining the blender-* skills with QA gates - game props (mid-poly, high-to-low), game characters (sculpt/AI mesh to rigged, animated export), Roblox props/accessories/avatars, AI or downloaded asset cleanup, procedural environments, web/AR assets, product turntables, mood/weather shots (night, rain, snow, fog). Use for complete multi-stage asset requests.
 ---
 
 # Workflow Recipes
 
-> **Looma 适配**：要求 Blender 5.2 LTS+。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代；`import_asset` / `generate_3d` 若不可用，改为导入用户提供的模型文件。
+> **Looma 适配**：要求 Blender 5.2 LTS+（5.3 已验证）。`look` 用 `render_viewport_to_path` / `get_screenshot_of_area_as_image` 或 `review_shots.py` 替代；`import_asset` / `generate_3d` 若不可用，改为导入用户提供的模型文件。
 
 `S` = the skills folder. Every `.py` runs headless via `python S/blender-core/scripts/run_in_blender.py --blend F.blend S/<skill>/scripts/<x>.py -- ...`, or live via MCP import + `run()` (see `blender-core`). **Gate** = stop and fix before continuing. Save after every stage (`--save`).
 
@@ -24,7 +24,7 @@ description: End-to-end Blender 5.2 playbooks chaining the blender-* skills with
 3. `uv_pack.py --objects SM_X --method seams --seams-from-sharp 60 --margin-px 16`
 4. Gate: `qa_check.py` on `SM_X` (game) **and** `X_high` (render profile, no inverted parts).
 5. `bake_maps.py --low SM_X --high X_high --maps normal ao curvature id --pack-orm [--directx for Unreal]`
-6. `build_pbr_material.py --name M_X --textures //textures --objects SM_X` (+ basecolor/roughness from texturing).
+6. `build_pbr_material.py --name M_X --textures //textures --objects SM_X`. Wear/grime: `smart_material.py --curvature-map //textures/T_X_CURV.png --ao-map //textures/T_X_AO.png --wear 0.4 --grime 0.4`, then self-bake (`bake_maps.py --low SM_X --maps basecolor roughness metallic`) (`blender-texturing`).
 7. Gate: `look` in material shading (no seams/waviness), then steps 6–7 of recipe 1.
 
 ## 3. Game character (sculpt or AI mesh → animated export)
@@ -34,7 +34,8 @@ description: End-to-end Blender 5.2 playbooks chaining the blender-* skills with
 4. `rigify_build.py --add basic_human --fit Body` → place joints (look xray) → `--metarig META_Body --generate`
 5. `bind_mesh.py --armature RIG_Body --meshes Body` → `stress_poses.py --armature RIG_Body` → `look(mode="frames")`. Gate: no collapse at the elbows/knees/shoulders. Fix weights.
 6. `rigify_build.py --rig RIG_Body --game-skeleton` → `rig_check.py --armature GAME_RIG_Body --profile unity|unreal`
-7. Animate on RIG_Body (`blender-animation`) → `bake_action.py --source RIG_Body --target GAME_RIG_Body [--root-motion xy --hips spine]`
+6b. Clothes and hair: `garment.py --body Body --group Torso --name Shirt --hide-body --morphs` (`blender-clothing`), `groom.py --surface Head --mask Scalp` → `--cards Hair` for engines (`blender-hair-grooming`). Gate: `garment.py --check` in every stress pose.
+7. Animate on RIG_Body, or retarget mocap: `retarget.py --source Mocap --target RIG_Body --show-map` → run (`blender-animation`). Then `bake_action.py --source RIG_Body --target GAME_RIG_Body [--root-motion xy --hips spine]` and `loop_check.py --fix` on cycles.
 8. `export_asset.py --preset unity_skeletal|unreal_skeletal --objects GAME_RIG_Body` (meshes are included as children). Gate: GLB/FBX summary shows skins + all clips. Engine scale check.
 
 ## 4. Roblox
@@ -52,7 +53,7 @@ description: End-to-end Blender 5.2 playbooks chaining the blender-* skills with
 5. Gate: QA passes + `look`. Never ship generated meshes unreviewed.
 
 ## 6. Procedural environment
-1. Terrain/ground mesh, then a scatter tree with `gn_builder.py --spec scatter.json --apply Ground --set Density=... Seed=...` (recipes in `blender-geometry-nodes/references/recipes.md`).
+1. `terrain.py --size 400 --res 513 --type ridged --erosion 30 --material` (or `--heightmap`), then one `scatter.py` layer per biome element (trees by slope/height, rocks aligned, grass masked) (`blender-environment-kits`). Custom scatter logic: `gn_builder.py` (recipes in `blender-geometry-nodes/references/recipes.md`). Modular buildings: `kit_check.py --grid 0.5 --fix` on every kit piece.
 2. Assets to scatter: optimized props with LODs (recipe 1). Keep instances (don't realize) for engines that support instancing (`export_gpu_instances`).
 3. Gate: `mesh_stats.py` on the evaluated result, plus `look` from the gameplay camera height.
 

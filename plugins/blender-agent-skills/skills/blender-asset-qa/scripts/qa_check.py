@@ -1,4 +1,5 @@
-"""Mesh/asset QA: z-fighting, detached parts, normals, topology, transforms, UVs, weights.
+"""Mesh/asset QA: z-fighting, detached parts, normals, topology, transforms, UVs, weights, materials
+(faces on empty slots, unused slots, missing texture files, data maps set to sRGB).
 
 Pass the objects of ONE asset (they are checked together: islands far from all others = floating).
 Usage:
@@ -14,6 +15,7 @@ from collections import Counter, defaultdict
 
 import bmesh
 import bpy
+import numpy as np
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
@@ -23,13 +25,67 @@ import _bpyx as bx  # noqa: E402
 
 # check -> severity per profile ("e" error, "w" warning, None skip)
 PROFILES = {
-    #               zfight floating inverted inconsist nonmanif boundary degen dupes ngons scale uv  weights
-    "game":   dict(zf="e", fl="e", inv="e", inc="e", nm="w", bd=None, dg="e", dup="w", ng="w", sc="e", uv="e", wt="e"),
-    "render": dict(zf="e", fl="e", inv="w", inc="w", nm=None, bd=None, dg="w", dup="w", ng=None, sc="w", uv="w", wt="w"),
-    "print":  dict(zf="e", fl="e", inv="e", inc="e", nm="e", bd="e", dg="e", dup="e", ng=None, sc="w", uv=None, wt=None),
-    "roblox": dict(zf="e", fl="e", inv="e", inc="e", nm="w", bd="w", dg="e", dup="w", ng="e", sc="e", uv="e", wt="e"),
+    #               zfight floating inverted inconsist nonmanif boundary degen dupes ngons scale uv  weights materials
+    "game":   dict(zf="e", fl="e", inv="e", inc="e", nm="w", bd=None, dg="e", dup="w", ng="w", sc="e", uv="e", wt="e", mt="e"),
+    "render": dict(zf="e", fl="e", inv="w", inc="w", nm=None, bd=None, dg="w", dup="w", ng=None, sc="w", uv="w", wt="w", mt="e"),
+    "print":  dict(zf="e", fl="e", inv="e", inc="e", nm="e", bd="e", dg="e", dup="e", ng=None, sc="w", uv=None, wt=None, mt=None),
+    "roblox": dict(zf="e", fl="e", inv="e", inc="e", nm="w", bd="w", dg="e", dup="w", ng="e", sc="e", uv="e", wt="e", mt="e"),
 }
 TRI_LIMIT = {"roblox": 20000}
+
+
+DATA_INPUTS = {"Roughness", "Metallic", "Normal", "Alpha", "Specular IOR Level", "Coat Weight", "Coat Roughness",
+               "Transmission Weight", "Subsurface Weight", "Anisotropic", "Sheen Weight", "IOR"}
+DATA_NODES = {"NORMAL_MAP", "BUMP", "DISPLACEMENT", "VECTOR_DISPLACEMENT"}
+
+
+def _feeds(sock, depth=4):
+    """(node type, input name) pairs a socket reaches through up to `depth` nodes."""
+    out = set()
+    for lk in sock.links:
+        n = lk.to_node
+        out.add((n.type, lk.to_socket.name))
+        if depth and n.type not in DATA_NODES and n.type != "BSDF_PRINCIPLED":
+            for o in n.outputs:
+                out |= _feeds(o, depth - 1)
+    return out
+
+
+def _material_issues(ob):
+    """[(severity_is_error, message)] for slots, faces and image textures."""
+    me, slots, out = ob.data, ob.material_slots, []
+    idx = [0] * len(me.polygons)
+    me.polygons.foreach_get("material_index", idx)
+    used = set(idx)
+    bad = sorted(i for i in used if i >= len(slots) or slots[i].material is None)
+    if bad or not slots:
+        out.append((True, f"{ob.name}: faces use empty/missing material slot(s) {bad or [0]} (grey in engines)"))
+    unused = [s.name or str(i) for i, s in enumerate(slots) if i not in used]
+    if unused:
+        out.append((False, f"{ob.name}: unused material slot(s) {unused} (extra draw calls in some exporters)"))
+    for i in sorted(used):
+        mat = slots[i].material if i < len(slots) else None
+        if mat is None or not mat.node_tree:
+            continue
+        for n in mat.node_tree.nodes:
+            if n.type != "TEX_IMAGE":
+                continue
+            img = n.image
+            if img is None:
+                if n.outputs["Color"].is_linked or n.outputs["Alpha"].is_linked:
+                    out.append((False, f"{mat.name}: image node {n.name!r} has no image"))
+                continue
+            if img.source == "FILE" and not img.packed_file and not os.path.exists(bpy.path.abspath(img.filepath)):
+                out.append((True, f"{mat.name}: missing texture file {img.filepath!r}"))
+            reach = _feeds(n.outputs["Color"])
+            data_use = sorted({s for t, s in reach if t == "BSDF_PRINCIPLED" and s in DATA_INPUTS}
+                              | {t.lower() for t, _s in reach if t in DATA_NODES})
+            if data_use and not img.colorspace_settings.is_data:
+                out.append((True, f"{mat.name}: {img.name} feeds {data_use} but is {img.colorspace_settings.name} "
+                                  "(must be Non-Color)"))
+            if img.colorspace_settings.is_data and ("BSDF_PRINCIPLED", "Base Color") in reach:
+                out.append((False, f"{mat.name}: {img.name} is Non-Color but drives Base Color (looks washed out)"))
+    return out
 
 
 def _mesh_world(ob, use_mods):
@@ -76,7 +132,11 @@ def _uv_stats(ob, bm_local):
         return {"uv_maps": 0}
     uv = bm_local.loops.layers.uv.active
     oob = total = zero = 0
-    grid, n = defaultdict(set), 128
+    n = 128
+    # coarse raster: a cell is used when its centre lies in a face, overlapped when in 2+ faces.
+    # Fixed-size arrays: memory does not grow with faces stacked on the same cells.
+    owner = np.full((n, n), -1, dtype=np.int64)
+    over = np.zeros((n, n), dtype=bool)
     step = max(1, len(bm_local.faces) // 30000)  # sample huge meshes
     for f in list(bm_local.faces)[::step]:
         pts = [l[uv].uv.copy() for l in f.loops]
@@ -89,19 +149,23 @@ def _uv_stats(ob, bm_local):
         if abs(a2) < 1e-12:
             zero += 1
             continue
-        # coarse raster of face bbox cells whose centre is inside the polygon (fan triangles)
         xs, ys = [p.x for p in pts], [p.y for p in pts]
-        for gx in range(max(0, int(min(xs) * n)), min(n, int(max(xs) * n) + 1)):
-            for gy in range(max(0, int(min(ys) * n)), min(n, int(max(ys) * n) + 1)):
-                c = Vector(((gx + .5) / n, (gy + .5) / n))
-                for i in range(1, len(pts) - 1):
-                    t = (pts[0], pts[i], pts[i + 1])
-                    d = [(t[(k + 1) % 3] - t[k]).to_3d().cross((c - t[k]).to_3d()).z for k in range(3)]
-                    if all(x >= 0 for x in d) or all(x <= 0 for x in d):
-                        grid[(gx, gy)].add(f.index)
-                        break
-    used = len(grid)
-    overlap = sum(1 for s in grid.values() if len(s) > 1)
+        x0, x1 = max(0, int(min(xs) * n)), min(n, int(max(xs) * n) + 1)
+        y0, y1 = max(0, int(min(ys) * n)), min(n, int(max(ys) * n) + 1)
+        if x0 >= x1 or y0 >= y1:
+            continue
+        cx, cy = np.meshgrid((np.arange(x0, x1) + .5) / n, (np.arange(y0, y1) + .5) / n, indexing="ij")
+        inside = np.zeros(cx.shape, dtype=bool)
+        for i in range(1, len(pts) - 1):   # fan triangles
+            t = (pts[0], pts[i], pts[i + 1])
+            d = [(t[(k + 1) % 3].x - t[k].x) * (cy - t[k].y) - (t[(k + 1) % 3].y - t[k].y) * (cx - t[k].x)
+                 for k in range(3)]
+            inside |= ((d[0] >= 0) & (d[1] >= 0) & (d[2] >= 0)) | ((d[0] <= 0) & (d[1] <= 0) & (d[2] <= 0))
+        win, ov = owner[x0:x1, y0:y1], over[x0:x1, y0:y1]   # views
+        ov |= inside & (win >= 0) & (win != f.index)
+        win[inside & (win < 0)] = f.index
+    used = int((owner >= 0).sum())
+    overlap = int(over.sum())
     return {"uv_maps": len(me.uv_layers), "uv_oob_pct": round(100 * oob / max(total, 1), 2),
             "uv_zero_area_faces": zero, "uv_overlap_pct": round(100 * overlap / max(used, 1), 2),
             "uv_coverage_pct": round(100 * used / n / n, 1)}
@@ -165,9 +229,15 @@ def run(objects=None, profile="game", eps=0.001, tol=0.002, no_modifiers=False, 
         bm_t = bm.copy()
         bmesh.ops.triangulate(bm_t, faces=bm_t.faces[:])
         bm_t.verts.ensure_lookup_table()
+        # signed volume about a point of the island itself: about the world origin, float32
+        # cancellation turns small parts far from it (3 mm parts 2 m out) "inside out"
+        ref = {}
+        for v in bm.verts:
+            ref.setdefault(isl[v.index], v.co.copy())
         for f in bm_t.faces:
-            a, b, c = (v.co for v in f.verts)
             g = isl[f.verts[0].index]
+            o = ref[g]
+            a, b, c = (v.co - o for v in f.verts)
             vol[g] += a.dot(b.cross(c)) / 6.0
             tris.append(tuple(base_v + v.index for v in f.verts))
             tri_meta.append((oi, gid_base + g, f.normal.copy()))
@@ -193,8 +263,11 @@ def run(objects=None, profile="game", eps=0.001, tol=0.002, no_modifiers=False, 
             errors.append(f"{ob.name}: negative scale (flips normals on export)")
         # materials
         m["materials"] = len(ob.material_slots)
-        if any(sl.material is None for sl in ob.material_slots) or not ob.material_slots:
-            warnings.append(f"{ob.name}: missing/empty material slot")
+        for is_err, msg in _material_issues(ob):
+            if is_err:
+                flag("mt", msg)
+            else:
+                warnings.append(msg)
         # weights
         arm_mod = next((md for md in ob.modifiers if md.type == "ARMATURE" and md.object), None)
         if arm_mod and ob.vertex_groups:
