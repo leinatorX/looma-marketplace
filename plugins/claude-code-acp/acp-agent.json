@@ -1,0 +1,83 @@
+{
+  "$schema": "https://looma.dev/schemas/acp-agent.v1.json",
+  "schemaVersion": 1,
+  "id": "claude-code",
+  "displayName": "Claude Code (ACP)",
+  "binary": {
+    "name": "claude-agent-acp",
+    "windowsPaths": [
+      "%APPDATA%/npm/claude-agent-acp.cmd",
+      "%USERPROFILE%/.local/bin/claude-agent-acp.exe",
+      "%LOCALAPPDATA%/Programs/claude-agent-acp/claude-agent-acp.exe"
+    ],
+    "unixPaths": [
+      "~/.local/bin/claude-agent-acp",
+      "/opt/homebrew/bin/claude-agent-acp",
+      "/usr/local/bin/claude-agent-acp"
+    ]
+  },
+  "acpArgs": [],
+  "versionArgs": [
+    "--version"
+  ],
+  "minVersion": "0.20.0",
+  "authStatusCommand": {
+    "args": [
+      "--cli",
+      "auth",
+      "status",
+      "--json"
+    ],
+    "format": "claude_json"
+  },
+  "defaultModels": [
+    {
+      "id": "default",
+      "name": "Claude Default",
+      "supportsVision": true,
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "high"
+    },
+    {
+      "id": "sonnet",
+      "name": "Claude Sonnet",
+      "supportsVision": true,
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "high"
+    },
+    {
+      "id": "opus",
+      "name": "Claude Opus",
+      "supportsVision": true,
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "high"
+    },
+    {
+      "id": "haiku",
+      "name": "Claude Haiku",
+      "supportsVision": true
+    }
+  ],
+  "loginArgs": [
+    "--cli",
+    "auth",
+    "login",
+    "--claudeai"
+  ],
+  "installHint": "运行 npm install -g @agentclientprotocol/claude-agent-acp 安装官方 ACP 适配器，并确保已完成 Claude 账号登录或配置 ANTHROPIC_API_KEY"
+}

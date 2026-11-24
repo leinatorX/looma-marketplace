@@ -135,6 +135,18 @@
         "authentication": "ON_USE"
       },
       "category": "Productivity"
+    },
+    {
+      "name": "claude-code-acp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/claude-code-acp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
     }
   ]
 }

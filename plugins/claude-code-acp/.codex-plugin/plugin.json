@@ -1,0 +1,31 @@
+{
+  "name": "claude-code-acp",
+  "version": "1.0.0",
+  "description": "官方 Claude Code ACP 智能体执行内核：通过 @agentclientprotocol/claude-agent-acp 将 Anthropic Claude Code 接入 Looma，支持多步规划、深度思考、权限审批、会话恢复与画布 MCP 协同。",
+  "author": {
+    "name": "Looma Team",
+    "url": "https://github.com/looma-ai"
+  },
+  "homepage": "https://github.com/looma-ai/looma",
+  "repository": "https://github.com/looma-ai/looma",
+  "license": "MIT",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "anthropic",
+    "acp",
+    "agent",
+    "kernel",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Claude Code ACP",
+    "shortDescription": "接入 Anthropic Claude Code 原生 ACP 智能体内核与模型",
+    "developerName": "Looma Team",
+    "category": "Productivity",
+    "brandColor": "#D97757",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}
