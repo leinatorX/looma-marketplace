@@ -1,0 +1,30 @@
+{
+  "name": "antigravity-acp",
+  "version": "1.0.0",
+  "description": "官方 Antigravity ACP 智能体执行内核：通过 Agent Client Protocol 直接运行 Antigravity agy 命令行工具，提供 20+ 款深度推理多模态大模型、多步思考展开与画布原生协同能力。",
+  "author": {
+    "name": "Looma Team",
+    "url": "https://github.com/looma-ai"
+  },
+  "homepage": "https://github.com/looma-ai/looma",
+  "repository": "https://github.com/looma-ai/looma",
+  "license": "MIT",
+  "keywords": [
+    "antigravity",
+    "acp",
+    "agent",
+    "kernel",
+    "reasoning",
+    "agy",
+    "looma"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Antigravity ACP",
+    "shortDescription": "接入 Antigravity 原生 ACP 智能体内核与推理模型",
+    "developerName": "Looma Team",
+    "category": "Productivity",
+    "brandColor": "#1A73E8",
+    "composerIcon": "./assets/icon.png"
+  }
+}
