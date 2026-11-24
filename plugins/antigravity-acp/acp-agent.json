@@ -1,15 +1,17 @@
 {
   "$schema": "https://looma.dev/schemas/acp-agent.v1.json",
+  "schemaVersion": 1,
   "id": "antigravity",
   "displayName": "Antigravity (ACP)",
   "binary": {
     "name": "agy",
-    "windowsCandidates": [
-      "%LOCALAPPDATA%\\agy\\bin\\agy.exe",
-      "%USERPROFILE%\\.local\\bin\\agy.exe"
+    "windowsPaths": [
+      "%LOCALAPPDATA%/agy/bin/agy.exe",
+      "%USERPROFILE%/.local/bin/agy.exe"
     ],
-    "unixCandidates": [
+    "unixPaths": [
       "~/.local/bin/agy",
+      "/opt/homebrew/bin/agy",
       "/usr/local/bin/agy"
     ]
   },
@@ -17,15 +19,19 @@
     "acp"
   ],
   "minVersion": "1.5.1",
-  "versionFlag": "--version",
-  "versionRegex": "(?:agy(?:\\.exe)?|version)\\s*v?([0-9]+\\.[0-9]+\\.[0-9]+)",
-  "modelsCommand": "models",
+  "requireHelpSubcommand": "acp",
+  "modelsCommand": {
+    "args": [
+      "models"
+    ],
+    "format": "tsv"
+  },
   "updateArgs": [
     "update"
   ],
   "loginArgs": [
     "login"
   ],
-  "installHint": "访问官方网站下载安装 agy 命令行工具并执行 agy login 登录",
-  "env": {}
+  "supportsAntigravitySystemPrompt": true,
+  "installHint": "访问官方网站下载安装 agy 命令行工具并执行 agy login 登录"
 }
